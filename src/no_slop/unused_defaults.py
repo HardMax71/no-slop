@@ -1,17 +1,3 @@
-"""
-no-slop unused defaults analyzer: Detect parameters with defaults never used.
-
-This performs whole-program analysis to find cases where:
-- A function has a default parameter value
-- ALL call sites in the codebase provide an explicit value
-- Therefore the default is dead code (SLOP010)
-
-Usage:
-    no-slop-unused-defaults /path/to/project
-    no-slop-unused-defaults . --json
-    no-slop-unused-defaults . --min-calls 3
-"""
-
 from __future__ import annotations
 
 import ast

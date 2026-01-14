@@ -1,28 +1,3 @@
-"""
-no-slop mypy plugin: Detect redundant reflection patterns.
-
-Checks:
-- slop-isinstance: isinstance(x, T) when x: T
-- slop-issubclass: issubclass(C, T) when C is subclass of T
-- slop-hasattr: hasattr(obj, "attr") when type guarantees attr exists
-- slop-getattr: getattr(obj, "attr", default) when type guarantees attr exists
-- slop-callable: callable(f) when f is typed as Callable
-- slop-any-check: Any reflection on Any/object/untyped values
-
-Installation:
-    Add to pyproject.toml:
-        [tool.mypy]
-        plugins = ["no_slop.mypy_plugin"]
-
-    Or mypy.ini:
-        [mypy]
-        plugins = no_slop.mypy_plugin
-
-Ignoring:
-    Use standard mypy ignore syntax:
-        hasattr(obj, "x")  # type: ignore[slop-hasattr]
-"""
-
 from __future__ import annotations
 
 from collections.abc import Callable

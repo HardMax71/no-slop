@@ -1,25 +1,3 @@
-"""
-no-slop flake8 plugin: Detect stylistic AI-slop patterns.
-
-Checks:
-- SLOP020: Excessive module docstring/comment block
-- SLOP021: ASCII art detected
-- SLOP022: Emojis in code
-
-Installation:
-    pip install no-slop
-    # Plugin auto-registers with flake8
-
-Ignoring:
-    Use standard flake8 ignore syntax:
-        # 🎉 noqa: SLOP022
-        # noqa (ignores all on this line)
-
-    File-level ignore (in first 10 lines):
-        # slop: ignore-file
-        # slop: ignore-file[SLOP021, SLOP022]
-"""
-
 from __future__ import annotations
 
 import ast
