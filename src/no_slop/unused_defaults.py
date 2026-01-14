@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import ast
 import json
 import sys
@@ -401,9 +402,6 @@ class UnusedDefaultsChecker:
 
 
 def main() -> int:
-    """CLI entry point."""
-    import argparse
-
     parser = argparse.ArgumentParser(
         description="Detect unused default parameter values (SLOP010)"
     )

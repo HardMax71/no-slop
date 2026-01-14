@@ -1,15 +1,16 @@
-"""Unit tests for the unused defaults checker."""
-
 from __future__ import annotations
 
+import json
+import subprocess
+import sys
 import tempfile
 from pathlib import Path
+from unittest.mock import patch
 
-from no_slop.unused_defaults import UnusedDefaultsChecker
+from no_slop.unused_defaults import UnusedDefaultsChecker, main
 
 
 def check_project(files: dict[str, str]) -> list[dict]:
-    """Create a temp project and run the checker."""
     with tempfile.TemporaryDirectory() as tmpdir:
         root = Path(tmpdir)
         for name, content in files.items():
@@ -29,6 +30,185 @@ def check_project(files: dict[str, str]) -> list[dict]:
             }
             for i in issues
         ]
+
+
+class TestUnusedDefaultsMain:
+    """Tests for the main() function directly (for coverage)."""
+
+    def test_main_with_issues(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            code = """
+def process(x: int, y: int = 10) -> int:
+    return x + y
+
+a = process(1, 2)
+"""
+            path = Path(tmpdir) / "test.py"
+            path.write_text(code)
+
+            with patch("sys.argv", ["unused_defaults", tmpdir]):
+                result = main()
+            assert result == 1
+
+    def test_main_no_issues(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            code = """
+def process(x: int, y: int = 10) -> int:
+    return x + y
+
+a = process(1)
+"""
+            path = Path(tmpdir) / "test.py"
+            path.write_text(code)
+
+            with patch("sys.argv", ["unused_defaults", tmpdir]):
+                result = main()
+            assert result == 0
+
+    def test_main_json_output(self, capsys: object) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            code = """
+def process(x: int, y: int = 10) -> int:
+    return x + y
+
+a = process(1, 2)
+"""
+            path = Path(tmpdir) / "test.py"
+            path.write_text(code)
+
+            with patch("sys.argv", ["unused_defaults", "--json", tmpdir]):
+                main()
+            captured = capsys.readouterr()  # type: ignore[attr-defined]
+            output = json.loads(captured.out)
+            assert len(output) == 1
+            assert output[0]["code"] == "SLOP010"
+
+    def test_main_min_calls_filter(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            code = """
+def process(x: int, y: int = 10) -> int:
+    return x + y
+
+a = process(1, 2)
+"""
+            path = Path(tmpdir) / "test.py"
+            path.write_text(code)
+
+            with patch("sys.argv", ["unused_defaults", "--min-calls", "5", tmpdir]):
+                result = main()
+            assert result == 0
+
+
+class TestUnusedDefaultsCLI:
+    """Tests for the CLI interface."""
+
+    def test_cli_basic(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            code = """
+def process(x: int, y: int = 10) -> int:
+    return x + y
+
+a = process(1, 2)
+b = process(3, 4)
+"""
+            path = Path(tmpdir) / "test.py"
+            path.write_text(code)
+
+            result = subprocess.run(
+                [sys.executable, "-m", "no_slop.unused_defaults", tmpdir],
+                capture_output=True,
+                text=True,
+            )
+            assert result.returncode == 1
+            assert "SLOP010" in result.stdout
+            assert "process" in result.stdout
+            assert "y = 10" in result.stdout
+
+    def test_cli_json_output(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            code = """
+def process(x: int, y: int = 10) -> int:
+    return x + y
+
+a = process(1, 2)
+"""
+            path = Path(tmpdir) / "test.py"
+            path.write_text(code)
+
+            result = subprocess.run(
+                [sys.executable, "-m", "no_slop.unused_defaults", "--json", tmpdir],
+                capture_output=True,
+                text=True,
+            )
+            assert result.returncode == 1
+            output = json.loads(result.stdout)
+            assert len(output) == 1
+            assert output[0]["code"] == "SLOP010"
+            assert output[0]["function"] == "process"
+            assert output[0]["param"] == "y"
+
+    def test_cli_no_issues(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            code = """
+def process(x: int, y: int = 10) -> int:
+    return x + y
+
+a = process(1)  # Uses default
+"""
+            path = Path(tmpdir) / "test.py"
+            path.write_text(code)
+
+            result = subprocess.run(
+                [sys.executable, "-m", "no_slop.unused_defaults", tmpdir],
+                capture_output=True,
+                text=True,
+            )
+            assert result.returncode == 0
+            assert "Found 0 unused defaults" in result.stdout
+
+    def test_cli_min_calls(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            code = """
+def process(x: int, y: int = 10) -> int:
+    return x + y
+
+a = process(1, 2)  # Only 1 call
+"""
+            path = Path(tmpdir) / "test.py"
+            path.write_text(code)
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "no_slop.unused_defaults",
+                    "--min-calls",
+                    "2",
+                    tmpdir,
+                ],
+                capture_output=True,
+                text=True,
+            )
+            assert result.returncode == 0
+
+    def test_cli_quiet(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            code = """
+def process(x: int, y: int = 10) -> int:
+    return x + y
+
+a = process(1, 2)
+"""
+            path = Path(tmpdir) / "test.py"
+            path.write_text(code)
+
+            result = subprocess.run(
+                [sys.executable, "-m", "no_slop.unused_defaults", "-q", tmpdir],
+                capture_output=True,
+                text=True,
+            )
+            assert result.returncode == 1
+            assert "Analyzing" not in result.stderr
 
 
 class TestUnusedDefaults:
@@ -221,8 +401,6 @@ b = _private(3, 4)
         assert len(issues) == 0
 
     def test_class_constructor_calls(self) -> None:
-        # Note: Foo(1, 2) matches by class name, not __init__
-        # This is expected behavior - constructor calls go through the class
         files = {
             "main.py": """
 class Foo:
@@ -236,5 +414,163 @@ b = Foo(3)  # Uses default
 """
         }
         issues = check_project(files)
-        # Default is used, should not flag
         assert len(issues) == 0
+
+    def test_async_function(self) -> None:
+        files = {
+            "main.py": """
+async def fetch(url: str, timeout: int = 30) -> str:
+    return url
+
+import asyncio
+asyncio.run(fetch("http://test.com", timeout=10))
+"""
+        }
+        issues = check_project(files)
+        assert len(issues) == 1
+        assert issues[0]["function"] == "fetch"
+        assert issues[0]["param"] == "timeout"
+
+    def test_kwonly_without_default(self) -> None:
+        files = {
+            "main.py": """
+def process(x: int, *, required: str, optional: int = 10) -> int:
+    return x
+
+# All calls
+a = process(1, required="a", optional=5)
+"""
+        }
+        issues = check_project(files)
+        assert len(issues) == 1
+        assert issues[0]["param"] == "optional"
+
+    def test_various_default_types(self) -> None:
+        files = {
+            "main.py": """
+def func(
+    a: list = [],
+    b: dict = {},
+    c: set = {1},
+    d: tuple = (),
+    e: object = dict(),
+    f: callable = lambda: 1,
+    g: int = -1,
+) -> None:
+    pass
+
+func([], {}, {2}, (), dict(), lambda: 2, -2)
+func([], {}, {3}, (), dict(), lambda: 3, -3)
+"""
+        }
+        issues = check_project(files)
+        assert len(issues) == 7
+        defaults = {i["param"]: i["default"] for i in issues}
+        assert defaults["a"] == "[...]"
+        assert defaults["b"] == "{...}"
+        assert defaults["c"] == "{...}"
+        assert defaults["d"] == "(...)"
+        assert defaults["e"] == "dict()"
+        assert defaults["f"] == "lambda"
+        assert defaults["g"] == "-1"
+
+    def test_default_is_variable_name(self) -> None:
+        files = {
+            "main.py": """
+DEFAULT_VALUE = 42
+
+def func(x: int = DEFAULT_VALUE) -> int:
+    return x
+
+func(10)
+func(20)
+"""
+        }
+        issues = check_project(files)
+        assert len(issues) == 1
+        assert issues[0]["default"] == "DEFAULT_VALUE"
+
+    def test_default_is_method_call(self) -> None:
+        files = {
+            "main.py": """
+class Factory:
+    @staticmethod
+    def create():
+        return 1
+
+def func(x: int = Factory.create()) -> int:
+    return x
+
+func(10)
+"""
+        }
+        issues = check_project(files)
+        assert len(issues) == 1
+        assert issues[0]["default"] == "<call>"
+
+    def test_default_is_complex_expression(self) -> None:
+        files = {
+            "main.py": """
+def func(x: int = 1 + 2) -> int:
+    return x
+
+func(10)
+"""
+        }
+        issues = check_project(files)
+        assert len(issues) == 1
+        assert issues[0]["default"] == "<expr>"
+
+    def test_syntax_error_file_skipped(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "good.py").write_text("""
+def func(x: int = 10) -> int:
+    return x
+
+func(20)
+""")
+            (root / "bad.py").write_text("def broken syntax")
+
+            checker = UnusedDefaultsChecker(str(root), quiet=True)
+            issues = checker.analyze()
+            assert len(issues) == 1
+            assert issues[0].function_name == "func"
+
+    def test_call_expression_callee(self) -> None:
+        files = {
+            "main.py": """
+def factory():
+    def inner(x: int = 10):
+        return x
+    return inner
+
+# Calling result of factory() - can't resolve callee
+factory()(5)
+"""
+        }
+        issues = check_project(files)
+        assert len(issues) == 0
+
+    def test_hidden_directory_skipped(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            (root / "good.py").write_text("""
+def func(x: int = 10) -> int:
+    return x
+
+func(20)
+""")
+            hidden = root / ".hidden"
+            hidden.mkdir()
+            (hidden / "bad.py").write_text("""
+def other(y: int = 20) -> int:
+    return y
+
+other(30)
+""")
+
+            checker = UnusedDefaultsChecker(str(root), quiet=True)
+            issues = checker.analyze()
+            assert len(issues) == 1
+            assert issues[0].function_name == "func"

@@ -11,6 +11,7 @@ from no_slop.rules.flake8.docstrings import (
     check_module_docstring,
 )
 from no_slop.rules.flake8.emojis import check_emojis
+from no_slop.rules.flake8.local_imports import check_local_imports
 
 __all__ = [
     "MAX_DOCSTRING_CODE_RATIO",
@@ -19,5 +20,6 @@ __all__ = [
     "check_ascii_art",
     "check_emojis",
     "check_leading_comments",
+    "check_local_imports",
     "check_module_docstring",
 ]

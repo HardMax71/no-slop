@@ -1,5 +1,3 @@
-"""Unit tests for the flake8 plugin."""
-
 from __future__ import annotations
 
 import ast
@@ -12,7 +10,6 @@ if TYPE_CHECKING:
 
 
 def check_code(code: str) -> list[tuple[int, int, str, type]]:
-    """Run the checker on code and return errors."""
     lines = code.splitlines()
     tree = ast.parse(code)
     checker = SlopStyleChecker(tree, lines, "test.py")
@@ -20,8 +17,6 @@ def check_code(code: str) -> list[tuple[int, int, str, type]]:
 
 
 class TestEmojiDetection:
-    """Tests for emoji detection (SLOP022)."""
-
     def test_emoji_in_string(self) -> None:
         code = 'x = "Hello 🎉 World"'
         errors = check_code(code)
@@ -62,8 +57,6 @@ class TestEmojiDetection:
 
 
 class TestAsciiArtDetection:
-    """Tests for ASCII art detection (SLOP021)."""
-
     def test_box_drawing(self) -> None:
         code = "# ╔════════════════════════╗"
         errors = check_code(code)
@@ -91,6 +84,25 @@ class TestAsciiArtDetection:
         art_errors = [e for e in errors if "SLOP021" in e[2]]
         assert len(art_errors) == 0
 
+    def test_section_header_end_allowed(self) -> None:
+        code = "# IMPORTS ============"
+        errors = check_code(code)
+        art_errors = [e for e in errors if "SLOP021" in e[2]]
+        assert len(art_errors) == 0
+
+    def test_arrow_pattern_detected(self) -> None:
+        code = "# <<<<<<<<<<<<<<<<<<<<<<<<<"
+        errors = check_code(code)
+        assert len(errors) == 1
+        assert "SLOP021" in errors[0][2]
+        assert "arrow" in errors[0][2].lower()
+
+    def test_caret_arrow_pattern_detected(self) -> None:
+        code = "# ^^^^^^^^^^^^^^^^^^^^^^"
+        errors = check_code(code)
+        assert len(errors) == 1
+        assert "SLOP021" in errors[0][2]
+
     def test_ascii_art_ignored_with_noqa(self) -> None:
         code = "# ╔════════════════════════╗  # noqa: SLOP021"
         errors = check_code(code)
@@ -98,10 +110,7 @@ class TestAsciiArtDetection:
 
 
 class TestExcessiveDocstring:
-    """Tests for excessive docstring detection (SLOP020)."""
-
     def test_long_docstring_flagged(self) -> None:
-        # Create a docstring that's too long relative to code
         docstring = '"""' + "\n".join(["Line " + str(i) for i in range(20)]) + '"""'
         code = f"""{docstring}
 
@@ -122,10 +131,40 @@ def foo() -> int:
         docstring_errors = [e for e in errors if "SLOP020" in e[2]]
         assert len(docstring_errors) == 0
 
+    def test_expression_not_constant_ok(self) -> None:
+        code = """foo()
+
+def bar() -> int:
+    return 1
+"""
+        errors = check_code(code)
+        docstring_errors = [e for e in errors if "SLOP020" in e[2]]
+        assert len(docstring_errors) == 0
+
+    def test_constant_not_string_ok(self) -> None:
+        code = """42
+
+def bar() -> int:
+    return 1
+"""
+        errors = check_code(code)
+        docstring_errors = [e for e in errors if "SLOP020" in e[2]]
+        assert len(docstring_errors) == 0
+
+    def test_docstring_with_statements_only(self) -> None:
+        docstring = '"""' + "\n".join(["Line " + str(i) for i in range(20)]) + '"""'
+        code = f"""{docstring}
+
+x = 1
+y = 2
+z = 3
+"""
+        errors = check_code(code)
+        docstring_errors = [e for e in errors if "SLOP020" in e[2]]
+        assert len(docstring_errors) == 1
+
 
 class TestLeadingComments:
-    """Tests for excessive leading comment blocks (SLOP020)."""
-
     def test_excessive_leading_comments(self) -> None:
         comments = "\n".join([f"# Comment line {i}" for i in range(15)])
         code = f"""{comments}
@@ -150,8 +189,6 @@ def foo() -> int:
 
 
 class TestFileIgnores:
-    """Tests for file-level ignores."""
-
     def test_file_ignore_all(self) -> None:
         code = """# slop: ignore-file
 x = "🎉 Hello"  # Would be flagged
@@ -181,16 +218,146 @@ x = "🎉 Hello"  # Ignored
 
 
 class TestMultipleIgnoreCodes:
-    """Tests for multiple ignore codes on one line."""
-
     def test_multiple_codes_in_noqa(self) -> None:
         code = 'x = "🎉"  # ╔══╗ noqa: SLOP021, SLOP022'
         errors = check_code(code)
         assert len(errors) == 0
 
     def test_noqa_with_other_content(self) -> None:
-        # noqa can appear after other comment content
         code = 'x = "🎉"  # TODO: fix this noqa: SLOP022'
         errors = check_code(code)
         emoji_errors = [e for e in errors if "SLOP022" in e[2]]
         assert len(emoji_errors) == 0
+
+
+class TestLocalImports:
+    def test_local_import_detected(self) -> None:
+        code = """
+def foo():
+    import os
+    return os.getcwd()
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 1
+        assert "Local import" in local_errors[0][2]
+
+    def test_local_from_import_detected(self) -> None:
+        code = """
+def foo():
+    from os import path
+    return path.exists(".")
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 1
+        assert "from os import path" in local_errors[0][2]
+
+    def test_module_level_import_ok(self) -> None:
+        code = """
+import os
+
+def foo():
+    return os.getcwd()
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 0
+
+    def test_type_checking_import_ok(self) -> None:
+        code = """
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
+
+def foo(x: "Sequence[int]") -> int:
+    return x[0]
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 0
+
+    def test_type_checking_attribute_import_ok(self) -> None:
+        code = """
+import typing
+
+if typing.TYPE_CHECKING:
+    from collections.abc import Sequence
+
+def foo(x: "Sequence[int]") -> int:
+    return x[0]
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 0
+
+    def test_local_import_ignored_with_noqa(self) -> None:
+        code = """
+def foo():
+    import os  # noqa: SLOP023
+    return os.getcwd()
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 0
+
+    def test_nested_function_local_import(self) -> None:
+        code = """
+def outer():
+    def inner():
+        import json
+        return json.dumps({})
+    return inner()
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 1
+
+    def test_async_function_local_import(self) -> None:
+        code = """
+async def fetch():
+    import aiohttp
+    return aiohttp
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 1
+
+    def test_class_method_local_import(self) -> None:
+        code = """
+class Foo:
+    def bar(self):
+        import sys
+        return sys.version
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 1
+
+    def test_regular_if_block_visited(self) -> None:
+        code = """
+if True:
+    x = 1
+
+def foo():
+    import os
+    return os.getcwd()
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 1
+
+    def test_if_with_other_condition_not_type_checking(self) -> None:
+        code = """
+DEBUG = True
+if DEBUG:
+    from collections.abc import Sequence
+
+def foo():
+    import os
+    return os.getcwd()
+"""
+        errors = check_code(code)
+        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        assert len(local_errors) == 1

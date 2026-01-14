@@ -1,5 +1,3 @@
-"""Unit tests for the mypy plugin."""
-
 from __future__ import annotations
 
 import subprocess
@@ -37,8 +35,6 @@ def run_mypy_on_code(code: str, extra_args: list[str] | None = None) -> str:
 
 
 class TestIsinstanceChecks:
-    """Tests for redundant isinstance detection."""
-
     def test_redundant_isinstance_simple(self) -> None:
         code = """
 from dataclasses import dataclass
@@ -78,10 +74,56 @@ def process(data):
         assert "SLOP007" in output
         assert "slop-any-check" in output
 
+    def test_isinstance_with_builtin_int(self) -> None:
+        code = """
+def process(x: int) -> str:
+    if isinstance(x, int):
+        return str(x)
+    return ""
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP001" in output
+
+    def test_isinstance_with_tuple_of_types(self) -> None:
+        code = """
+from dataclasses import dataclass
+
+@dataclass
+class User:
+    name: str
+
+def process(user: User) -> str:
+    if isinstance(user, (User, str)):
+        return str(user)
+    return ""
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP001" in output
+
+    def test_isinstance_subclass_detected(self) -> None:
+        code = """
+class Animal:
+    pass
+
+class Dog(Animal):
+    pass
+
+def process(dog: Dog) -> bool:
+    return isinstance(dog, Animal)
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP001" in output
+
+    def test_isinstance_with_none_type(self) -> None:
+        code = """
+def process(x: None) -> bool:
+    return isinstance(x, type(None))
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP001" not in output
+
 
 class TestHasattrChecks:
-    """Tests for redundant hasattr detection."""
-
     def test_redundant_hasattr(self) -> None:
         code = """
 from dataclasses import dataclass
@@ -121,10 +163,52 @@ def process(data: object) -> str:
         output = run_mypy_on_code(code)
         assert "SLOP007" in output
 
+    def test_hasattr_inherited_attribute(self) -> None:
+        code = """
+class Base:
+    name: str = "base"
+
+class Child(Base):
+    pass
+
+def get_name(c: Child) -> str:
+    if hasattr(c, "name"):
+        return c.name
+    return ""
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP003" in output
+
+    def test_hasattr_with_getattr_method(self) -> None:
+        code = """
+class Dynamic:
+    def __getattr__(self, name: str) -> str:
+        return name
+
+def check(d: Dynamic) -> bool:
+    return hasattr(d, "anything")
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP003" not in output
+
+    def test_hasattr_union_all_have_attr(self) -> None:
+        code = """
+class A:
+    name: str = "a"
+
+class B:
+    name: str = "b"
+
+def get_name(x: A | B) -> str:
+    if hasattr(x, "name"):
+        return x.name
+    return ""
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP003" in output
+
 
 class TestGetattrChecks:
-    """Tests for redundant getattr detection."""
-
     def test_redundant_getattr_with_default(self) -> None:
         code = """
 from dataclasses import dataclass
@@ -152,13 +236,32 @@ def get_email(user: User) -> str:
     return getattr(user, "email")
 """
         output = run_mypy_on_code(code)
-        # Without default, no SLOP004 warning
         assert "SLOP004" not in output
+
+    def test_getattr_on_any_flagged(self) -> None:
+        code = """
+def get_val(data) -> str:
+    return getattr(data, "key", "default")
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP007" in output
+
+    def test_getattr_inherited_attr(self) -> None:
+        code = """
+class Base:
+    value: int = 42
+
+class Child(Base):
+    pass
+
+def get_val(c: Child) -> int:
+    return getattr(c, "value", 0)
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP004" in output
 
 
 class TestCallableChecks:
-    """Tests for redundant callable detection."""
-
     def test_redundant_callable(self) -> None:
         code = """
 from typing import Callable
@@ -182,10 +285,48 @@ def call_maybe(func: object) -> int:
         output = run_mypy_on_code(code)
         assert "SLOP007" in output
 
+    def test_callable_with_call_method(self) -> None:
+        code = """
+class Functor:
+    def __call__(self) -> int:
+        return 42
+
+def invoke(f: Functor) -> int:
+    if callable(f):
+        return f()
+    return 0
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP005" in output
+
+    def test_callable_on_class_type(self) -> None:
+        code = """
+class MyClass:
+    pass
+
+def create(cls: type[MyClass]) -> MyClass:
+    if callable(cls):
+        return cls()
+    raise ValueError()
+"""
+        output = run_mypy_on_code(code)
+        # type[X] is TypeType, not detected as callable by current impl
+        assert "SLOP005" not in output
+
+    def test_callable_union_all_callable(self) -> None:
+        code = """
+from typing import Callable
+
+def invoke(f: Callable[[], int] | Callable[[], str]) -> int | str:
+    if callable(f):
+        return f()
+    return 0
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP005" in output
+
 
 class TestIssubclassChecks:
-    """Tests for redundant issubclass detection."""
-
     def test_redundant_issubclass(self) -> None:
         code = """
 from dataclasses import dataclass
@@ -201,10 +342,61 @@ def check_class(cls: type[User]) -> bool:
         assert "SLOP002" in output
         assert "slop-issubclass" in output
 
+    def test_issubclass_on_any_flagged(self) -> None:
+        code = """
+def check(cls) -> bool:
+    return issubclass(cls, dict)
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP007" in output
+
+    def test_issubclass_with_tuple(self) -> None:
+        code = """
+class Animal:
+    pass
+
+class Dog(Animal):
+    pass
+
+def check(cls: type[Dog]) -> bool:
+    return issubclass(cls, (Animal, str))
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP002" in output
+
+    def test_issubclass_inheritance_chain(self) -> None:
+        code = """
+class A:
+    pass
+
+class B(A):
+    pass
+
+class C(B):
+    pass
+
+def check(cls: type[C]) -> bool:
+    return issubclass(cls, A)
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP002" in output
+
+    def test_issubclass_not_redundant(self) -> None:
+        code = """
+class A:
+    pass
+
+class B:
+    pass
+
+def check(cls: type[A] | type[B]) -> bool:
+    return issubclass(cls, A)
+"""
+        output = run_mypy_on_code(code)
+        assert "SLOP002" not in output
+
 
 class TestIgnoreComments:
-    """Tests for type: ignore comments."""
-
     def test_ignore_hasattr(self) -> None:
         code = """
 from dataclasses import dataclass

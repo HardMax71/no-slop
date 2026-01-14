@@ -34,6 +34,7 @@ pip install no-slop
 | `SLOP020` | Excessive module docstring or leading comments |
 | `SLOP021` | ASCII art (box drawing, block characters)      |
 | `SLOP022` | Emojis in code                                 |
+| `SLOP023` | Local imports (imports inside functions)       |
 
 ### Unused Defaults CLI
 
@@ -124,6 +125,21 @@ process([1, 2], 2)
 process([3, 4], 3)
 ```
 
+### Local import (SLOP023)
+
+```python
+def fetch_data(url: str) -> dict:
+    import requests  # Bad - move to module level
+    return requests.get(url).json()
+```
+
+Imports inside functions:
+- Hide dependencies
+- Run on every call (performance)
+- Make code harder to analyze
+
+Exception: `if TYPE_CHECKING:` blocks are allowed.
+
 ## Ignoring Errors
 
 ### mypy
@@ -139,6 +155,9 @@ if hasattr(user, "name"):  # type: ignore[slop-hasattr]
 x = "hello"  # noqa: SLOP022
 x = "test"  # noqa: SLOP021, SLOP022
 x = "test"  # noqa
+
+def lazy_import():
+    import heavy_module  # noqa: SLOP023
 
 # File-level (first 10 lines)
 # slop: ignore-file
