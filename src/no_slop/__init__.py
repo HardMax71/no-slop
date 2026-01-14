@@ -1,4 +1,4 @@
-__version__ = "0.1.0"
+from no_slop._version import __version__
 
 from no_slop.flake8_plugin import SlopStyleChecker
 from no_slop.mypy_plugin import NoSlopPlugin
