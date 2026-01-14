@@ -10,6 +10,7 @@
 [![flake8](https://img.shields.io/badge/flake8-plugin-blue.svg)](https://flake8.pycqa.org/)
 [![CI](https://github.com/HardMax71/no-slop/actions/workflows/ci.yml/badge.svg)](https://github.com/HardMax71/no-slop/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/HardMax71/no-slop/branch/master/graph/badge.svg)](https://codecov.io/gh/HardMax71/no-slop)
+[![PyPI](https://img.shields.io/pypi/v/no-slop.svg)](https://pypi.org/project/no-slop/)
 
 </div>
 
