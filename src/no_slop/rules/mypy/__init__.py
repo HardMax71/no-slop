@@ -7,6 +7,8 @@ from no_slop.rules.mypy.base import (
     SLOP_REDUNDANT_ISINSTANCE,
     SLOP_REDUNDANT_ISSUBCLASS,
     SLOP_RUNTIME_CHECK_ON_ANY,
+    extract_class_type,
+    extract_type_check_types,
 )
 from no_slop.rules.mypy.callable import check_callable
 from no_slop.rules.mypy.getattr import check_getattr
@@ -26,4 +28,6 @@ __all__ = [
     "check_hasattr",
     "check_isinstance",
     "check_issubclass",
+    "extract_class_type",
+    "extract_type_check_types",
 ]

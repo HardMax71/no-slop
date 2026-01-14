@@ -1,7 +1,7 @@
-# slop: ignore-file[SLOP021, SLOP022]
+# slop: ignore-file[SLP021, SLP022]
 """
 This file ignores ASCII art and emoji checks at the file level.
-Only SLOP020 (excessive docstring) would be checked.
+Only SLP020 (excessive docstring) would be checked.
 """
 
 from typing import Optional

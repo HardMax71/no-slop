@@ -5,6 +5,7 @@ from collections.abc import Iterator
 
 from no_slop.rules.flake8.base import IgnoreHandler
 
+# Detection patterns for ASCII art
 ASCII_ART_PATTERNS = [
     re.compile(r"[│┃┆┇┊┋|]{3,}"),
     re.compile(r"[─━┄┅┈┉]{5,}"),
@@ -17,6 +18,16 @@ ASCII_ART_PATTERNS = [
     re.compile(r"(\^{5,}|v{5,})"),
 ]
 
+# Allowed separator patterns (simple comment dividers)
+SIMPLE_SEPARATOR = re.compile(r"^[-=*~#]{3,}$")
+SECTION_HEADER_START = re.compile(r"^[A-Z][A-Z0-9 _:]+[-=*~#]{3,}$")
+SECTION_HEADER_WRAPPED = re.compile(r"^[-=*~#]{3,}\s+[A-Z][A-Za-z0-9 _:]+\s*[-=*~#]*$")
+
+# Classification patterns for error messages
+BOX_DRAWING_CHARS = re.compile(r"[╔╗╚╝╠╣╦╩╬║│┃┌┐└┘├┤┬┴┼]")
+BLOCK_DRAWING_CHARS = re.compile(r"[▀▁▂▃▄▅▆▇█▉▊▋▌▍▎▏░▒▓]{3,}")
+ARROW_PATTERN = re.compile(r"[<>]{10,}|[\^v]{10,}")
+
 
 def check_ascii_art(
     lines: list[str],
@@ -28,41 +39,41 @@ def check_ascii_art(
 
         if stripped.startswith("#"):
             after_hash = stripped[1:].strip()
-            if re.match(r"^[-=*~#]{3,}$", after_hash):
+            if SIMPLE_SEPARATOR.match(after_hash):
                 continue
-            if re.match(r"^[A-Z][A-Z0-9 _:]+[-=*~#]{3,}$", after_hash):
+            if SECTION_HEADER_START.match(after_hash):
                 continue
-            if re.match(r"^[-=*~#]{3,}\s+[A-Z][A-Za-z0-9 _:]+\s*[-=*~#]*$", after_hash):
+            if SECTION_HEADER_WRAPPED.match(after_hash):
                 continue
 
         for pattern in ASCII_ART_PATTERNS:
             if pattern.search(line):
-                if ignores.should_ignore(i, "SLOP021"):
+                if ignores.should_ignore(i, "SLP021"):
                     break
 
-                if re.search(r"[╔╗╚╝╠╣╦╩╬║│┃┌┐└┘├┤┬┴┼]", line):
+                if BOX_DRAWING_CHARS.search(line):
                     yield (
                         i,
                         0,
-                        "SLOP021 Box-drawing ASCII art detected. Keep code clean.",
+                        "SLP021 Box-drawing ASCII art detected. Keep code clean.",
                         checker_type,
                     )
                     break
 
-                if re.search(r"[▀▁▂▃▄▅▆▇█▉▊▋▌▍▎▏░▒▓]{3,}", line):
+                if BLOCK_DRAWING_CHARS.search(line):
                     yield (
                         i,
                         0,
-                        "SLOP021 Block-drawing ASCII art detected. Keep code clean.",
+                        "SLP021 Block-drawing ASCII art detected. Keep code clean.",
                         checker_type,
                     )
                     break
 
-                if re.search(r"[<>]{10,}|[\^v]{10,}", line):
+                if ARROW_PATTERN.search(line):
                     yield (
                         i,
                         0,
-                        "SLOP021 Decorative arrow pattern detected. Keep code clean.",
+                        "SLP021 Decorative arrow pattern detected. Keep code clean.",
                         checker_type,
                     )
                     break

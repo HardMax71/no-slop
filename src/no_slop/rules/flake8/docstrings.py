@@ -5,6 +5,8 @@ from collections.abc import Iterator
 
 from no_slop.rules.flake8.base import (
     MAX_DOCSTRING_CODE_RATIO,
+    MAX_DOCSTRING_LINES_ABSOLUTE,
+    MAX_LEADING_COMMENT_LINES,
     MAX_MODULE_DOCSTRING_LINES,
     IgnoreHandler,
 )
@@ -42,12 +44,12 @@ def check_module_docstring(
 
     if code_lines > 0:
         ratio = doc_line_count / max(code_lines, 1)
-        if ratio > MAX_DOCSTRING_CODE_RATIO or doc_line_count > 15:
-            if not ignores.should_ignore(first_node.lineno, "SLOP020"):
+        if ratio > MAX_DOCSTRING_CODE_RATIO or doc_line_count > MAX_DOCSTRING_LINES_ABSOLUTE:
+            if not ignores.should_ignore(first_node.lineno, "SLP020"):
                 yield (
                     first_node.lineno,
                     0,
-                    f"SLOP020 Excessive module docstring ({doc_line_count} lines). "
+                    f"SLP020 Excessive module docstring ({doc_line_count} lines). "
                     "Keep docs near the code they document.",
                     checker_type,
                 )
@@ -72,12 +74,12 @@ def check_leading_comments(
         else:
             break
 
-    if comment_lines > 10 and first_comment_line is not None:
-        if not ignores.should_ignore(first_comment_line, "SLOP020"):
+    if comment_lines > MAX_LEADING_COMMENT_LINES and first_comment_line is not None:
+        if not ignores.should_ignore(first_comment_line, "SLP020"):
             yield (
                 first_comment_line,
                 0,
-                f"SLOP020 Excessive leading comment block ({comment_lines} lines). "
+                f"SLP020 Excessive leading comment block ({comment_lines} lines). "
                 "Keep docs near the code they document.",
                 checker_type,
             )

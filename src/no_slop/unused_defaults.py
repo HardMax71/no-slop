@@ -403,7 +403,7 @@ class UnusedDefaultsChecker:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Detect unused default parameter values (SLOP010)"
+        description="Detect unused default parameter values (SLP010)"
     )
     parser.add_argument(
         "path",
@@ -432,7 +432,7 @@ def main() -> int:
     if args.json:
         output = [
             {
-                "code": "SLOP010",
+                "code": "SLP010",
                 "file": issue.file,
                 "line": issue.line,
                 "col": issue.col,
@@ -449,7 +449,7 @@ def main() -> int:
         print(f"\nFound {len(issues)} unused defaults:\n")
 
         for issue in sorted(issues, key=lambda i: (i.file, i.line)):
-            print(f"{issue.file}:{issue.line}:{issue.col}: SLOP010")
+            print(f"{issue.file}:{issue.line}:{issue.col}: SLP010")
             print(f"  Function: {issue.function_name}")
             print(f"  Parameter: {issue.param_name} = {issue.default_value}")
             print(f"  {issue.message}\n")

@@ -30,7 +30,7 @@ def check_emojis(
     for i, line in enumerate(lines, 1):
         matches = EMOJI_PATTERN.findall(line)
         if matches:
-            if ignores.should_ignore(i, "SLOP022"):
+            if ignores.should_ignore(i, "SLP022"):
                 continue
 
             first_match = EMOJI_PATTERN.search(line)
@@ -39,6 +39,6 @@ def check_emojis(
             yield (
                 i,
                 col,
-                f"SLOP022 Emoji detected: {' '.join(matches)}. Keep code professional.",
+                f"SLP022 Emoji detected: {' '.join(matches)}. Keep code professional.",
                 checker_type,
             )

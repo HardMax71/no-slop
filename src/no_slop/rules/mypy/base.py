@@ -1,15 +1,24 @@
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 from mypy.errorcodes import ErrorCode
+from mypy.nodes import Expression, RefExpr, TupleExpr
 from mypy.types import (
     AnyType,
     CallableType,
     Instance,
     NoneType,
+    Overloaded,
     ProperType,
+    Type,
+    TypeType,
     UnionType,
     get_proper_type,
 )
+
+if TYPE_CHECKING:
+    from mypy.plugin import FunctionContext
 
 SLOP_REDUNDANT_ISINSTANCE = ErrorCode(
     "slop-isinstance", "Redundant isinstance check", "General"
@@ -122,3 +131,44 @@ def type_to_str(typ: ProperType) -> str:
     if isinstance(typ, AnyType):
         return "Any"
     return str(typ)
+
+
+def extract_type_check_types(expr: Expression, ctx: FunctionContext) -> list[Type]:
+    """Extract types from isinstance/issubclass second argument (class or tuple of classes)."""
+    types: list[Type] = []
+    if isinstance(expr, TupleExpr):
+        for item in expr.items:
+            types.extend(extract_type_check_types(item, ctx))
+    elif isinstance(expr, RefExpr):
+        typ = ctx.api.get_expression_type(expr)
+        if typ:
+            proper = get_proper_type(typ)
+            extracted = extract_class_type(proper)
+            if extracted:
+                types.append(extracted)
+            else:
+                types.append(typ)
+    return types
+
+
+def extract_class_type(typ: ProperType) -> Type | None:
+    """Extract the class type from type[X], Type[X], or callable that returns X."""
+    if isinstance(typ, Instance) and typ.type.fullname == "builtins.type" and typ.args:
+        return typ.args[0]
+
+    if isinstance(typ, TypeType) and typ.item:
+        return typ.item
+
+    if isinstance(typ, CallableType) and typ.ret_type:
+        ret = get_proper_type(typ.ret_type)
+        if isinstance(ret, Instance):
+            return ret
+
+    if isinstance(typ, Overloaded) and typ.items:
+        first = typ.items[0]
+        if first.ret_type:
+            ret = get_proper_type(first.ret_type)
+            if isinstance(ret, Instance):
+                return ret
+
+    return None

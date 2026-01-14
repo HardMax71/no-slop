@@ -9,11 +9,9 @@ from no_slop.rules.flake8.base import IgnoreHandler
 class LocalImportVisitor(ast.NodeVisitor):
     def __init__(
         self,
-        lines: list[str],
         ignores: IgnoreHandler,
         checker_type: type,
     ):
-        self.lines = lines
         self.ignores = ignores
         self.checker_type = checker_type
         self.errors: list[tuple[int, int, str, type]] = []
@@ -51,27 +49,27 @@ class LocalImportVisitor(ast.NodeVisitor):
 
     def visit_Import(self, node: ast.Import) -> None:
         if self._in_function and not self._in_type_checking:
-            if not self.ignores.should_ignore(node.lineno, "SLOP023"):
+            if not self.ignores.should_ignore(node.lineno, "SLP023"):
                 names = ", ".join(alias.name for alias in node.names)
                 self.errors.append(
                     (
                         node.lineno,
                         node.col_offset,
-                        f"SLOP023 Local import '{names}'. Move to module level.",
+                        f"SLP023 Local import '{names}'. Move to module level.",
                         self.checker_type,
                     )
                 )
 
     def visit_ImportFrom(self, node: ast.ImportFrom) -> None:
         if self._in_function and not self._in_type_checking:
-            if not self.ignores.should_ignore(node.lineno, "SLOP023"):
+            if not self.ignores.should_ignore(node.lineno, "SLP023"):
                 module = node.module or ""
                 names = ", ".join(alias.name for alias in node.names)
                 self.errors.append(
                     (
                         node.lineno,
                         node.col_offset,
-                        f"SLOP023 Local import 'from {module} import {names}'. "
+                        f"SLP023 Local import 'from {module} import {names}'. "
                         "Move to module level.",
                         self.checker_type,
                     )
@@ -80,10 +78,10 @@ class LocalImportVisitor(ast.NodeVisitor):
 
 def check_local_imports(
     tree: ast.Module,
-    lines: list[str],
+    lines: list[str],  # noqa: ARG001 - kept for API compatibility
     ignores: IgnoreHandler,
     checker_type: type,
 ) -> Iterator[tuple[int, int, str, type]]:
-    visitor = LocalImportVisitor(lines, ignores, checker_type)
+    visitor = LocalImportVisitor(ignores, checker_type)
     visitor.visit(tree)
     yield from visitor.errors

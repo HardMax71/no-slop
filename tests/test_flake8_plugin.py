@@ -21,14 +21,14 @@ class TestEmojiDetection:
         code = 'x = "Hello 🎉 World"'
         errors = check_code(code)
         assert len(errors) == 1
-        assert "SLOP022" in errors[0][2]
+        assert "SLP022" in errors[0][2]
         assert "🎉" in errors[0][2]
 
     def test_emoji_in_comment(self) -> None:
         code = "x = 1  # 🚀 rocket ship"
         errors = check_code(code)
         assert len(errors) == 1
-        assert "SLOP022" in errors[0][2]
+        assert "SLP022" in errors[0][2]
 
     def test_multiple_emojis(self) -> None:
         code = 'msg = "🎯 ✨ 🎉"'
@@ -42,11 +42,11 @@ class TestEmojiDetection:
     def test_no_emoji_clean(self) -> None:
         code = 'x = "Hello World"'
         errors = check_code(code)
-        emoji_errors = [e for e in errors if "SLOP022" in e[2]]
+        emoji_errors = [e for e in errors if "SLP022" in e[2]]
         assert len(emoji_errors) == 0
 
     def test_emoji_ignored_with_noqa(self) -> None:
-        code = 'x = "Hello 🎉"  # noqa: SLOP022'
+        code = 'x = "Hello 🎉"  # noqa: SLP022'
         errors = check_code(code)
         assert len(errors) == 0
 
@@ -61,50 +61,50 @@ class TestAsciiArtDetection:
         code = "# ╔════════════════════════╗"
         errors = check_code(code)
         assert len(errors) == 1
-        assert "SLOP021" in errors[0][2]
+        assert "SLP021" in errors[0][2]
         assert "Box-drawing" in errors[0][2]
 
     def test_block_characters(self) -> None:
         code = "# ████████████████████████"
         errors = check_code(code)
         assert len(errors) == 1
-        assert "SLOP021" in errors[0][2]
+        assert "SLP021" in errors[0][2]
         assert "Block-drawing" in errors[0][2]
 
     def test_simple_separator_allowed(self) -> None:
         code = "# ========================================="
         errors = check_code(code)
         # Simple separators should be allowed
-        art_errors = [e for e in errors if "SLOP021" in e[2]]
+        art_errors = [e for e in errors if "SLP021" in e[2]]
         assert len(art_errors) == 0
 
     def test_section_header_allowed(self) -> None:
         code = "# === CONFIGURATION ==="
         errors = check_code(code)
-        art_errors = [e for e in errors if "SLOP021" in e[2]]
+        art_errors = [e for e in errors if "SLP021" in e[2]]
         assert len(art_errors) == 0
 
     def test_section_header_end_allowed(self) -> None:
         code = "# IMPORTS ============"
         errors = check_code(code)
-        art_errors = [e for e in errors if "SLOP021" in e[2]]
+        art_errors = [e for e in errors if "SLP021" in e[2]]
         assert len(art_errors) == 0
 
     def test_arrow_pattern_detected(self) -> None:
         code = "# <<<<<<<<<<<<<<<<<<<<<<<<<"
         errors = check_code(code)
         assert len(errors) == 1
-        assert "SLOP021" in errors[0][2]
+        assert "SLP021" in errors[0][2]
         assert "arrow" in errors[0][2].lower()
 
     def test_caret_arrow_pattern_detected(self) -> None:
         code = "# ^^^^^^^^^^^^^^^^^^^^^^"
         errors = check_code(code)
         assert len(errors) == 1
-        assert "SLOP021" in errors[0][2]
+        assert "SLP021" in errors[0][2]
 
     def test_ascii_art_ignored_with_noqa(self) -> None:
-        code = "# ╔════════════════════════╗  # noqa: SLOP021"
+        code = "# ╔════════════════════════╗  # noqa: SLP021"
         errors = check_code(code)
         assert len(errors) == 0
 
@@ -118,7 +118,7 @@ def foo() -> int:
     return 1
 """
         errors = check_code(code)
-        docstring_errors = [e for e in errors if "SLOP020" in e[2]]
+        docstring_errors = [e for e in errors if "SLP020" in e[2]]
         assert len(docstring_errors) == 1
 
     def test_short_docstring_ok(self) -> None:
@@ -128,7 +128,7 @@ def foo() -> int:
     return 1
 '''
         errors = check_code(code)
-        docstring_errors = [e for e in errors if "SLOP020" in e[2]]
+        docstring_errors = [e for e in errors if "SLP020" in e[2]]
         assert len(docstring_errors) == 0
 
     def test_expression_not_constant_ok(self) -> None:
@@ -138,7 +138,7 @@ def bar() -> int:
     return 1
 """
         errors = check_code(code)
-        docstring_errors = [e for e in errors if "SLOP020" in e[2]]
+        docstring_errors = [e for e in errors if "SLP020" in e[2]]
         assert len(docstring_errors) == 0
 
     def test_constant_not_string_ok(self) -> None:
@@ -148,7 +148,7 @@ def bar() -> int:
     return 1
 """
         errors = check_code(code)
-        docstring_errors = [e for e in errors if "SLOP020" in e[2]]
+        docstring_errors = [e for e in errors if "SLP020" in e[2]]
         assert len(docstring_errors) == 0
 
     def test_docstring_with_statements_only(self) -> None:
@@ -160,7 +160,7 @@ y = 2
 z = 3
 """
         errors = check_code(code)
-        docstring_errors = [e for e in errors if "SLOP020" in e[2]]
+        docstring_errors = [e for e in errors if "SLP020" in e[2]]
         assert len(docstring_errors) == 1
 
 
@@ -173,7 +173,7 @@ def foo() -> int:
     return 1
 """
         errors = check_code(code)
-        comment_errors = [e for e in errors if "SLOP020" in e[2]]
+        comment_errors = [e for e in errors if "SLP020" in e[2]]
         assert len(comment_errors) == 1
 
     def test_short_leading_comments_ok(self) -> None:
@@ -184,7 +184,7 @@ def foo() -> int:
     return 1
 """
         errors = check_code(code)
-        comment_errors = [e for e in errors if "SLOP020" in e[2]]
+        comment_errors = [e for e in errors if "SLP020" in e[2]]
         assert len(comment_errors) == 0
 
 
@@ -198,18 +198,18 @@ x = "🎉 Hello"  # Would be flagged
         assert len(errors) == 0
 
     def test_file_ignore_specific_code(self) -> None:
-        code = """# slop: ignore-file[SLOP022]
+        code = """# slop: ignore-file[SLP022]
 x = "🎉 Hello"  # Emoji ignored
 # ╔════════╗  # ASCII art NOT ignored
 """
         errors = check_code(code)
-        emoji_errors = [e for e in errors if "SLOP022" in e[2]]
-        art_errors = [e for e in errors if "SLOP021" in e[2]]
+        emoji_errors = [e for e in errors if "SLP022" in e[2]]
+        art_errors = [e for e in errors if "SLP021" in e[2]]
         assert len(emoji_errors) == 0
         assert len(art_errors) == 1
 
     def test_file_ignore_multiple_codes(self) -> None:
-        code = """# slop: ignore-file[SLOP021, SLOP022]
+        code = """# slop: ignore-file[SLP021, SLP022]
 x = "🎉 Hello"  # Ignored
 # ╔════════╗  # Ignored
 """
@@ -219,14 +219,14 @@ x = "🎉 Hello"  # Ignored
 
 class TestMultipleIgnoreCodes:
     def test_multiple_codes_in_noqa(self) -> None:
-        code = 'x = "🎉"  # ╔══╗ noqa: SLOP021, SLOP022'
+        code = 'x = "🎉"  # ╔══╗ noqa: SLP021, SLP022'
         errors = check_code(code)
         assert len(errors) == 0
 
     def test_noqa_with_other_content(self) -> None:
-        code = 'x = "🎉"  # TODO: fix this noqa: SLOP022'
+        code = 'x = "🎉"  # TODO: fix this noqa: SLP022'
         errors = check_code(code)
-        emoji_errors = [e for e in errors if "SLOP022" in e[2]]
+        emoji_errors = [e for e in errors if "SLP022" in e[2]]
         assert len(emoji_errors) == 0
 
 
@@ -238,7 +238,7 @@ def foo():
     return os.getcwd()
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 1
         assert "Local import" in local_errors[0][2]
 
@@ -249,7 +249,7 @@ def foo():
     return path.exists(".")
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 1
         assert "from os import path" in local_errors[0][2]
 
@@ -261,7 +261,7 @@ def foo():
     return os.getcwd()
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 0
 
     def test_type_checking_import_ok(self) -> None:
@@ -275,7 +275,7 @@ def foo(x: "Sequence[int]") -> int:
     return x[0]
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 0
 
     def test_type_checking_attribute_import_ok(self) -> None:
@@ -289,17 +289,17 @@ def foo(x: "Sequence[int]") -> int:
     return x[0]
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 0
 
     def test_local_import_ignored_with_noqa(self) -> None:
         code = """
 def foo():
-    import os  # noqa: SLOP023
+    import os  # noqa: SLP023
     return os.getcwd()
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 0
 
     def test_nested_function_local_import(self) -> None:
@@ -311,7 +311,7 @@ def outer():
     return inner()
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 1
 
     def test_async_function_local_import(self) -> None:
@@ -321,7 +321,7 @@ async def fetch():
     return aiohttp
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 1
 
     def test_class_method_local_import(self) -> None:
@@ -332,7 +332,7 @@ class Foo:
         return sys.version
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 1
 
     def test_regular_if_block_visited(self) -> None:
@@ -345,7 +345,7 @@ def foo():
     return os.getcwd()
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 1
 
     def test_if_with_other_condition_not_type_checking(self) -> None:
@@ -359,5 +359,5 @@ def foo():
     return os.getcwd()
 """
         errors = check_code(code)
-        local_errors = [e for e in errors if "SLOP023" in e[2]]
+        local_errors = [e for e in errors if "SLP023" in e[2]]
         assert len(local_errors) == 1

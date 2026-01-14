@@ -1,10 +1,5 @@
-"""
-Test cases demonstrating AI-slop patterns that no-slop should detect.
-Run mypy with the no_slop_plugin to see errors.
-"""
-
-from typing import Callable, Optional
 from dataclasses import dataclass
+from typing import Callable, Optional
 
 
 @dataclass
@@ -131,6 +126,8 @@ def process_data(data: list[int], multiplier: int = 1) -> list[int]:
 _r1 = process_data([1, 2, 3], 2)
 _r2 = process_data([4, 5], 3)
 _r3 = process_data([], 1)
+
+
 # No call uses the default!
 
 
@@ -163,6 +160,8 @@ def get_config(path: str, fallback: Optional[str] = None) -> str:
 # All calls provide explicit fallback
 _g1 = get_config("/etc/app.conf", "/etc/default.conf")
 _g2 = get_config("/home/user/.config", "/etc/app.conf")
+
+
 # No call uses the default None!
 
 

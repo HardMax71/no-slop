@@ -29,18 +29,18 @@ pip install no-slop
 
 ### flake8 Plugin
 
-| Code      | Description                                    |
-|-----------|------------------------------------------------|
-| `SLOP020` | Excessive module docstring or leading comments |
-| `SLOP021` | ASCII art (box drawing, block characters)      |
-| `SLOP022` | Emojis in code                                 |
-| `SLOP023` | Local imports (imports inside functions)       |
+| Code     | Description                                    |
+|----------|------------------------------------------------|
+| `SLP020` | Excessive module docstring or leading comments |
+| `SLP021` | ASCII art (box drawing, block characters)      |
+| `SLP022` | Emojis in code                                 |
+| `SLP023` | Local imports (imports inside functions)       |
 
 ### Unused Defaults CLI
 
-| Code      | Description                                   |
-|-----------|-----------------------------------------------|
-| `SLOP010` | Default parameter never used by any call site |
+| Code     | Description                                   |
+|----------|-----------------------------------------------|
+| `SLP010` | Default parameter never used by any call site |
 
 ## Configuration
 
@@ -113,7 +113,7 @@ def bad(data):  # No type annotation
         return data.get("key")
 ```
 
-### Unused default (SLOP010)
+### Unused default (SLP010)
 
 ```python
 def process(data: list[int], multiplier: int = 1) -> list[int]:
@@ -125,7 +125,7 @@ process([1, 2], 2)
 process([3, 4], 3)
 ```
 
-### Local import (SLOP023)
+### Local import (SLP023)
 
 ```python
 def fetch_data(url: str) -> dict:
@@ -152,16 +152,16 @@ if hasattr(user, "name"):  # type: ignore[slop-hasattr]
 ### flake8
 
 ```python
-x = "hello"  # noqa: SLOP022
-x = "test"  # noqa: SLOP021, SLOP022
+x = "hello"  # noqa: SLP022
+x = "test"  # noqa: SLP021, SLP022
 x = "test"  # noqa
 
 def lazy_import():
-    import heavy_module  # noqa: SLOP023
+    import heavy_module  # noqa: SLP023
 
 # File-level (first 10 lines)
 # slop: ignore-file
-# slop: ignore-file[SLOP021, SLOP022]
+# slop: ignore-file[SLP021, SLP022]
 ```
 
 ## CLI

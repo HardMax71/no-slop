@@ -1,5 +1,3 @@
-"""Test inline and file-level ignores for slop checkers."""
-
 from typing import Callable
 
 
@@ -10,12 +8,12 @@ from typing import Callable
 
 def test_emoji_ignored() -> None:
     """This emoji should be ignored."""
-    x = 1  # 🎉 noqa: SLOP022
+    x = 1  # 🎉 noqa: SLP022
 
 
 def test_emoji_not_ignored() -> None:
     """This emoji should NOT be ignored (wrong code)."""
-    x = 1  # 🚀 noqa: SLOP021
+    x = 1  # 🚀 noqa: SLP021
 
 
 def test_all_ignored_on_line() -> None:
@@ -27,9 +25,9 @@ def test_all_ignored_on_line() -> None:
 # Test: ASCII art ignores
 # =============================================================================
 
-# ╔════════════════════════════════════════╗  # noqa: SLOP021
-# ║  This box art is intentionally ignored ║  # noqa: SLOP021
-# ╚════════════════════════════════════════╝  # noqa: SLOP021
+# ╔════════════════════════════════════════╗  # noqa: SLP021
+# ║  This box art is intentionally ignored ║  # noqa: SLP021
+# ╚════════════════════════════════════════╝  # noqa: SLP021
 
 # This one is NOT ignored:
 # ████████████████████████████████
@@ -41,7 +39,7 @@ def test_all_ignored_on_line() -> None:
 
 
 def multi_ignore() -> None:
-    x = "test"  # 🎉 ╔══╗ noqa: SLOP021, SLOP022
+    x = "test"  # 🎉 ╔══╗ noqa: SLP021, SLP022
 
 
 # =============================================================================
