@@ -49,7 +49,6 @@ def process(user: User) -> str:
     return ""
 """
         output = run_mypy_on_code(code)
-        assert "SLOP001" in output
         assert "slop-isinstance" in output
 
     def test_isinstance_on_union_ok(self) -> None:
@@ -60,7 +59,6 @@ def process(x: int | str) -> str:
     return x
 """
         output = run_mypy_on_code(code)
-        assert "SLOP001" not in output
         assert "slop-isinstance" not in output
 
     def test_isinstance_on_any_flagged(self) -> None:
@@ -71,7 +69,6 @@ def process(data):
     return None
 """
         output = run_mypy_on_code(code)
-        assert "SLOP007" in output
         assert "slop-any-check" in output
 
     def test_isinstance_with_builtin_int(self) -> None:
@@ -82,7 +79,7 @@ def process(x: int) -> str:
     return ""
 """
         output = run_mypy_on_code(code)
-        assert "SLOP001" in output
+        assert "slop-isinstance" in output
 
     def test_isinstance_with_tuple_of_types(self) -> None:
         code = """
@@ -98,7 +95,7 @@ def process(user: User) -> str:
     return ""
 """
         output = run_mypy_on_code(code)
-        assert "SLOP001" in output
+        assert "slop-isinstance" in output
 
     def test_isinstance_subclass_detected(self) -> None:
         code = """
@@ -112,7 +109,7 @@ def process(dog: Dog) -> bool:
     return isinstance(dog, Animal)
 """
         output = run_mypy_on_code(code)
-        assert "SLOP001" in output
+        assert "slop-isinstance" in output
 
     def test_isinstance_with_none_type(self) -> None:
         code = """
@@ -120,7 +117,7 @@ def process(x: None) -> bool:
     return isinstance(x, type(None))
 """
         output = run_mypy_on_code(code)
-        assert "SLOP001" not in output
+        assert "slop-isinstance" not in output
 
 
 class TestHasattrChecks:
@@ -138,7 +135,6 @@ def get_name(user: User) -> str:
     return ""
 """
         output = run_mypy_on_code(code)
-        assert "SLOP003" in output
         assert "slop-hasattr" in output
 
     def test_hasattr_dynamic_attr_ok(self) -> None:
@@ -151,7 +147,7 @@ def get_attr(obj: object, attr: str) -> object:
         output = run_mypy_on_code(code)
         # Dynamic attr string - can't analyze statically, no error
         # Plugin only checks literal strings
-        assert "SLOP007" not in output
+        assert "slop-any-check" not in output
 
     def test_hasattr_on_object_flagged(self) -> None:
         code = """
@@ -161,7 +157,7 @@ def process(data: object) -> str:
     return ""
 """
         output = run_mypy_on_code(code)
-        assert "SLOP007" in output
+        assert "slop-any-check" in output
 
     def test_hasattr_inherited_attribute(self) -> None:
         code = """
@@ -177,7 +173,7 @@ def get_name(c: Child) -> str:
     return ""
 """
         output = run_mypy_on_code(code)
-        assert "SLOP003" in output
+        assert "slop-hasattr" in output
 
     def test_hasattr_with_getattr_method(self) -> None:
         code = """
@@ -189,7 +185,7 @@ def check(d: Dynamic) -> bool:
     return hasattr(d, "anything")
 """
         output = run_mypy_on_code(code)
-        assert "SLOP003" not in output
+        assert "slop-hasattr" not in output
 
     def test_hasattr_union_all_have_attr(self) -> None:
         code = """
@@ -205,7 +201,7 @@ def get_name(x: A | B) -> str:
     return ""
 """
         output = run_mypy_on_code(code)
-        assert "SLOP003" in output
+        assert "slop-hasattr" in output
 
 
 class TestGetattrChecks:
@@ -221,7 +217,6 @@ def get_email(user: User) -> str:
     return getattr(user, "email", "no-email")
 """
         output = run_mypy_on_code(code)
-        assert "SLOP004" in output
         assert "slop-getattr" in output
 
     def test_getattr_without_default_ok(self) -> None:
@@ -236,7 +231,7 @@ def get_email(user: User) -> str:
     return getattr(user, "email")
 """
         output = run_mypy_on_code(code)
-        assert "SLOP004" not in output
+        assert "slop-getattr" not in output
 
     def test_getattr_on_any_flagged(self) -> None:
         code = """
@@ -244,7 +239,7 @@ def get_val(data) -> str:
     return getattr(data, "key", "default")
 """
         output = run_mypy_on_code(code)
-        assert "SLOP007" in output
+        assert "slop-any-check" in output
 
     def test_getattr_inherited_attr(self) -> None:
         code = """
@@ -258,7 +253,7 @@ def get_val(c: Child) -> int:
     return getattr(c, "value", 0)
 """
         output = run_mypy_on_code(code)
-        assert "SLOP004" in output
+        assert "slop-getattr" in output
 
 
 class TestCallableChecks:
@@ -272,7 +267,6 @@ def invoke(func: Callable[[], int]) -> int:
     return 0
 """
         output = run_mypy_on_code(code)
-        assert "SLOP005" in output
         assert "slop-callable" in output
 
     def test_callable_on_object_flagged(self) -> None:
@@ -283,7 +277,7 @@ def call_maybe(func: object) -> int:
     return 0
 """
         output = run_mypy_on_code(code)
-        assert "SLOP007" in output
+        assert "slop-any-check" in output
 
     def test_callable_with_call_method(self) -> None:
         code = """
@@ -297,7 +291,7 @@ def invoke(f: Functor) -> int:
     return 0
 """
         output = run_mypy_on_code(code)
-        assert "SLOP005" in output
+        assert "slop-callable" in output
 
     def test_callable_on_class_type(self) -> None:
         code = """
@@ -311,7 +305,7 @@ def create(cls: type[MyClass]) -> MyClass:
 """
         output = run_mypy_on_code(code)
         # type[X] is TypeType, not detected as callable by current impl
-        assert "SLOP005" not in output
+        assert "slop-callable" not in output
 
     def test_callable_union_all_callable(self) -> None:
         code = """
@@ -323,7 +317,7 @@ def invoke(f: Callable[[], int] | Callable[[], str]) -> int | str:
     return 0
 """
         output = run_mypy_on_code(code)
-        assert "SLOP005" in output
+        assert "slop-callable" in output
 
 
 class TestIssubclassChecks:
@@ -339,7 +333,6 @@ def check_class(cls: type[User]) -> bool:
     return issubclass(cls, User)
 """
         output = run_mypy_on_code(code)
-        assert "SLOP002" in output
         assert "slop-issubclass" in output
 
     def test_issubclass_on_any_flagged(self) -> None:
@@ -348,7 +341,7 @@ def check(cls) -> bool:
     return issubclass(cls, dict)
 """
         output = run_mypy_on_code(code)
-        assert "SLOP007" in output
+        assert "slop-any-check" in output
 
     def test_issubclass_with_tuple(self) -> None:
         code = """
@@ -362,7 +355,7 @@ def check(cls: type[Dog]) -> bool:
     return issubclass(cls, (Animal, str))
 """
         output = run_mypy_on_code(code)
-        assert "SLOP002" in output
+        assert "slop-issubclass" in output
 
     def test_issubclass_inheritance_chain(self) -> None:
         code = """
@@ -379,7 +372,7 @@ def check(cls: type[C]) -> bool:
     return issubclass(cls, A)
 """
         output = run_mypy_on_code(code)
-        assert "SLOP002" in output
+        assert "slop-issubclass" in output
 
     def test_issubclass_not_redundant(self) -> None:
         code = """
@@ -393,7 +386,7 @@ def check(cls: type[A] | type[B]) -> bool:
     return issubclass(cls, A)
 """
         output = run_mypy_on_code(code)
-        assert "SLOP002" not in output
+        assert "slop-issubclass" not in output
 
 
 class TestIgnoreComments:
@@ -411,7 +404,7 @@ def get_name(user: User) -> str:
     return ""
 """
         output = run_mypy_on_code(code)
-        assert "SLOP003" not in output
+        assert "slop-hasattr" not in output
 
     def test_ignore_callable(self) -> None:
         code = """
@@ -423,4 +416,4 @@ def invoke(func: Callable[[], int]) -> int:
     return 0
 """
         output = run_mypy_on_code(code)
-        assert "SLOP005" not in output
+        assert "slop-callable" not in output

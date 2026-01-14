@@ -21,7 +21,7 @@ def check_issubclass(ctx: FunctionContext) -> Type:
 
     if is_any_or_untyped(cls_type):
         ctx.api.fail(
-            "[SLOP007] issubclass on Any/untyped value. "
+            "issubclass on Any/untyped value. "
             "Add type annotation instead of runtime check.",
             ctx.context,
             code=SLOP_RUNTIME_CHECK_ON_ANY,
@@ -45,7 +45,7 @@ def check_issubclass(ctx: FunctionContext) -> Type:
         check_proper = get_proper_type(check_type)
         if is_proper_subtype(inner_type, check_proper):
             ctx.api.fail(
-                f"[SLOP002] Redundant issubclass: '{type_to_str(inner_type)}' "
+                f"Redundant issubclass: '{type_to_str(inner_type)}' "
                 f"is always subclass of '{type_to_str(check_proper)}'. Remove check.",
                 ctx.context,
                 code=SLOP_REDUNDANT_ISSUBCLASS,

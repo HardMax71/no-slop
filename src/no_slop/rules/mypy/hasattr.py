@@ -25,7 +25,7 @@ def check_hasattr(ctx: FunctionContext) -> Type:
 
     if is_any_or_untyped(obj_type):
         ctx.api.fail(
-            "[SLOP007] hasattr on Any/untyped value. "
+            "hasattr on Any/untyped value. "
             "Add type annotation instead of runtime check.",
             ctx.context,
             code=SLOP_RUNTIME_CHECK_ON_ANY,
@@ -34,7 +34,7 @@ def check_hasattr(ctx: FunctionContext) -> Type:
 
     if type_has_attribute(obj_type, attr_expr.value) is True:
         ctx.api.fail(
-            f"[SLOP003] Redundant hasattr: '{type_to_str(obj_type)}' always has "
+            f"Redundant hasattr: '{type_to_str(obj_type)}' always has "
             f"attribute '{attr_expr.value}'. Use obj.{attr_expr.value} directly.",
             ctx.context,
             code=SLOP_REDUNDANT_HASATTR,

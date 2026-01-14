@@ -21,7 +21,7 @@ def check_isinstance(ctx: FunctionContext) -> Type:
 
     if is_any_or_untyped(obj_type):
         ctx.api.fail(
-            "[SLOP007] isinstance on Any/untyped value. "
+            "isinstance on Any/untyped value."
             "Add type annotation to parameter instead of runtime check.",
             ctx.context,
             code=SLOP_RUNTIME_CHECK_ON_ANY,
@@ -33,7 +33,7 @@ def check_isinstance(ctx: FunctionContext) -> Type:
         check_proper = get_proper_type(check_type)
         if is_proper_subtype(obj_type, check_proper):
             ctx.api.fail(
-                f"[SLOP001] Redundant isinstance: '{type_to_str(obj_type)}' "
+                f"Redundant isinstance: '{type_to_str(obj_type)}' "
                 f"is always instance of '{type_to_str(check_proper)}'. Remove check.",
                 ctx.context,
                 code=SLOP_REDUNDANT_ISINSTANCE,

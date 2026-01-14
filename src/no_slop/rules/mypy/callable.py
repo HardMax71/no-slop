@@ -20,7 +20,7 @@ def check_callable(ctx: FunctionContext) -> Type:
 
     if is_any_or_untyped(obj_type):
         ctx.api.fail(
-            "[SLOP007] callable() on Any/untyped value. "
+            "callable() on Any/untyped value. "
             "Add Callable type annotation instead of runtime check.",
             ctx.context,
             code=SLOP_RUNTIME_CHECK_ON_ANY,
@@ -29,7 +29,7 @@ def check_callable(ctx: FunctionContext) -> Type:
 
     if is_callable_type(obj_type) is True:
         ctx.api.fail(
-            f"[SLOP005] Redundant callable: '{type_to_str(obj_type)}' is statically "
+            f"Redundant callable: '{type_to_str(obj_type)}' is statically "
             "callable. Remove check.",
             ctx.context,
             code=SLOP_REDUNDANT_CALLABLE,

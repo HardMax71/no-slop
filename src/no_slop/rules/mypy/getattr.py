@@ -25,7 +25,7 @@ def check_getattr(ctx: FunctionContext) -> Type:
 
     if is_any_or_untyped(obj_type):
         ctx.api.fail(
-            "[SLOP007] getattr on Any/untyped value. "
+            "getattr on Any/untyped value. "
             "Add type annotation instead of runtime check.",
             ctx.context,
             code=SLOP_RUNTIME_CHECK_ON_ANY,
@@ -35,7 +35,7 @@ def check_getattr(ctx: FunctionContext) -> Type:
     if type_has_attribute(obj_type, attr_expr.value) is True:
         if len(ctx.args) >= 3 and ctx.args[2]:
             ctx.api.fail(
-                f"[SLOP004] Redundant getattr with default: '{type_to_str(obj_type)}' "
+                f"Redundant getattr with default: '{type_to_str(obj_type)}' "
                 f"always has '{attr_expr.value}'. Use obj.{attr_expr.value} directly.",
                 ctx.context,
                 code=SLOP_REDUNDANT_GETATTR,
