@@ -1,6 +1,16 @@
+<div align="center">
+
 # no-slop
 
-Detect AI-generated code patterns via static analysis.
+**Detect AI-generated code patterns via static analysis**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![mypy](https://img.shields.io/badge/mypy-plugin-blue.svg)](https://mypy.readthedocs.io/)
+[![flake8](https://img.shields.io/badge/flake8-plugin-blue.svg)](https://flake8.pycqa.org/)
+[![CI](https://github.com/HardMax71/no-slop/actions/workflows/ci.yml/badge.svg)](https://github.com/HardMax71/no-slop/actions/workflows/ci.yml)
+
+</div>
 
 ## Install
 
