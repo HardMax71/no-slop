@@ -69,11 +69,7 @@ def _extract_isinstance_types(expr: Expression, ctx: FunctionContext) -> list[Ty
 
 
 def _extract_class_type(typ: ProperType) -> Type | None:
-    if (
-        isinstance(typ, Instance)
-        and typ.type.fullname == "builtins.type"
-        and typ.args
-    ):
+    if isinstance(typ, Instance) and typ.type.fullname == "builtins.type" and typ.args:
         return typ.args[0]
 
     if isinstance(typ, TypeType) and typ.item:

@@ -32,9 +32,7 @@ def check_ascii_art(
                 continue
             if re.match(r"^[A-Z][A-Z0-9 _:]+[-=*~#]{3,}$", after_hash):
                 continue
-            if re.match(
-                r"^[-=*~#]{3,}\s+[A-Z][A-Za-z0-9 _:]+\s*[-=*~#]*$", after_hash
-            ):
+            if re.match(r"^[-=*~#]{3,}\s+[A-Z][A-Za-z0-9 _:]+\s*[-=*~#]*$", after_hash):
                 continue
 
         for pattern in ASCII_ART_PATTERNS:
