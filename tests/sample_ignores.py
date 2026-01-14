@@ -7,6 +7,7 @@ from typing import Callable
 # Test: Line-level noqa ignores
 # =============================================================================
 
+
 def test_emoji_ignored() -> None:
     """This emoji should be ignored."""
     x = 1  # 🎉 noqa: SLOP022
@@ -37,6 +38,7 @@ def test_all_ignored_on_line() -> None:
 # =============================================================================
 # Test: Multiple codes in noqa
 # =============================================================================
+
 
 def multi_ignore() -> None:
     x = "test"  # 🎉 ╔══╗ noqa: SLOP021, SLOP022

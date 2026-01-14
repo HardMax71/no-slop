@@ -87,9 +87,7 @@ class SignatureExtractor(ast.NodeVisitor):
         self.generic_visit(node)
         self._scope_stack.pop()
 
-    def _extract_signature(
-        self, node: ast.FunctionDef | ast.AsyncFunctionDef
-    ) -> None:
+    def _extract_signature(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
         args = node.args
         params: list[ParamInfo] = []
         params_with_defaults: list[ParamInfo] = []
@@ -285,8 +283,8 @@ class UnusedDefaultsChecker:
                 continue
 
             rel_path = str(path.relative_to(self.project_root))
-            module_name = rel_path.replace("/", ".").replace("\\", ".").removesuffix(
-                ".py"
+            module_name = (
+                rel_path.replace("/", ".").replace("\\", ".").removesuffix(".py")
             )
 
             extractor = SignatureExtractor(rel_path, module_name)

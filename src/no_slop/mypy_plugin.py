@@ -24,12 +24,8 @@ __all__ = ["NoSlopPlugin", "plugin"]
 SLOP_REDUNDANT_ISINSTANCE = ErrorCode(
     "slop-isinstance", "Redundant isinstance check", "General"
 )
-SLOP_REDUNDANT_HASATTR = ErrorCode(
-    "slop-hasattr", "Redundant hasattr check", "General"
-)
-SLOP_REDUNDANT_GETATTR = ErrorCode(
-    "slop-getattr", "Redundant getattr call", "General"
-)
+SLOP_REDUNDANT_HASATTR = ErrorCode("slop-hasattr", "Redundant hasattr check", "General")
+SLOP_REDUNDANT_GETATTR = ErrorCode("slop-getattr", "Redundant getattr call", "General")
 SLOP_REDUNDANT_CALLABLE = ErrorCode(
     "slop-callable", "Redundant callable check", "General"
 )
@@ -66,9 +62,7 @@ def _is_proper_subtype(left: ProperType, right: ProperType) -> bool:
         return False
 
     if isinstance(left, UnionType):
-        return all(
-            _is_proper_subtype(get_proper_type(m), right) for m in left.items
-        )
+        return all(_is_proper_subtype(get_proper_type(m), right) for m in left.items)
 
     if isinstance(left, NoneType) and isinstance(right, NoneType):
         return True

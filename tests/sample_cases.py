@@ -18,6 +18,7 @@ class User:
 # SLOP001: Redundant isinstance
 # =============================================================================
 
+
 def process_user_bad(user: User) -> str:
     # BAD: isinstance check is redundant - user is always User
     if isinstance(user, User):
@@ -48,6 +49,7 @@ def process_union_ok(x: int | str) -> str:
 # SLOP003: Redundant hasattr
 # =============================================================================
 
+
 def get_user_name_bad(user: User) -> str:
     # BAD: User always has .name attribute
     if hasattr(user, "name"):
@@ -64,6 +66,7 @@ def get_user_name_good(user: User) -> str:
 # SLOP004: Redundant getattr with default
 # =============================================================================
 
+
 def get_email_bad(user: User) -> str:
     # BAD: User always has .email, default is never used
     return getattr(user, "email", "no-email")
@@ -77,6 +80,7 @@ def get_email_good(user: User) -> str:
 # =============================================================================
 # SLOP005: Redundant callable
 # =============================================================================
+
 
 def invoke_bad(func: Callable[[], int]) -> int:
     # BAD: func is typed as Callable, check is redundant
@@ -94,6 +98,7 @@ def invoke_good(func: Callable[[], int]) -> int:
 # SLOP006: Redundant type() check
 # =============================================================================
 
+
 def check_exact_type_bad(x: int) -> bool:
     # BAD: x is exactly int
     return type(x) is int
@@ -107,6 +112,7 @@ def check_exact_type_ok(x: int | bool) -> bool:
 # =============================================================================
 # SLOP010: Unused default parameters
 # =============================================================================
+
 
 def format_message(text: str, prefix: str = "[INFO]") -> str:
     """Default is used - this is fine."""
@@ -143,6 +149,7 @@ _c3 = calculate(7, 8, 9)
 # SLOP010: Optional[T] = None where None is never passed
 # =============================================================================
 
+
 def get_config(path: str, fallback: Optional[str] = None) -> str:
     """
     If ALL call sites pass a fallback value and never pass None,
@@ -163,13 +170,14 @@ _g2 = get_config("/home/user/.config", "/etc/app.conf")
 # Valid patterns (should NOT be flagged)
 # =============================================================================
 
+
 def valid_default_usage(x: int, y: int = 10) -> int:
     """Default IS used by some call sites."""
     return x + y
 
 
 # Mix of calls - some use default
-_v1 = valid_default_usage(5)      # Uses default
+_v1 = valid_default_usage(5)  # Uses default
 _v2 = valid_default_usage(3, 20)  # Provides explicit
 
 
@@ -181,6 +189,7 @@ def dynamic_attr_access(obj: object, attr: str) -> object:
 # =============================================================================
 # SLOP007: Runtime checks on Any/untyped values
 # =============================================================================
+
 
 def process_untyped(data):  # No type annotation!
     """BAD: Using isinstance to compensate for missing types."""
@@ -212,6 +221,7 @@ def process_typed(data: dict[str, str]) -> str | None:
 # =============================================================================
 # SLOP008: Missing return type annotations
 # =============================================================================
+
 
 def no_return_type(x: int):  # Missing -> ...
     """BAD: Missing return type annotation."""

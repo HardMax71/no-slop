@@ -103,11 +103,11 @@ class TestExcessiveDocstring:
     def test_long_docstring_flagged(self) -> None:
         # Create a docstring that's too long relative to code
         docstring = '"""' + "\n".join(["Line " + str(i) for i in range(20)]) + '"""'
-        code = f'''{docstring}
+        code = f"""{docstring}
 
 def foo() -> int:
     return 1
-'''
+"""
         errors = check_code(code)
         docstring_errors = [e for e in errors if "SLOP020" in e[2]]
         assert len(docstring_errors) == 1
@@ -128,22 +128,22 @@ class TestLeadingComments:
 
     def test_excessive_leading_comments(self) -> None:
         comments = "\n".join([f"# Comment line {i}" for i in range(15)])
-        code = f'''{comments}
+        code = f"""{comments}
 
 def foo() -> int:
     return 1
-'''
+"""
         errors = check_code(code)
         comment_errors = [e for e in errors if "SLOP020" in e[2]]
         assert len(comment_errors) == 1
 
     def test_short_leading_comments_ok(self) -> None:
-        code = '''# Author: Test
+        code = """# Author: Test
 # License: MIT
 
 def foo() -> int:
     return 1
-'''
+"""
         errors = check_code(code)
         comment_errors = [e for e in errors if "SLOP020" in e[2]]
         assert len(comment_errors) == 0
@@ -153,18 +153,18 @@ class TestFileIgnores:
     """Tests for file-level ignores."""
 
     def test_file_ignore_all(self) -> None:
-        code = '''# slop: ignore-file
+        code = """# slop: ignore-file
 x = "🎉 Hello"  # Would be flagged
 # ╔════════╗  # Would be flagged
-'''
+"""
         errors = check_code(code)
         assert len(errors) == 0
 
     def test_file_ignore_specific_code(self) -> None:
-        code = '''# slop: ignore-file[SLOP022]
+        code = """# slop: ignore-file[SLOP022]
 x = "🎉 Hello"  # Emoji ignored
 # ╔════════╗  # ASCII art NOT ignored
-'''
+"""
         errors = check_code(code)
         emoji_errors = [e for e in errors if "SLOP022" in e[2]]
         art_errors = [e for e in errors if "SLOP021" in e[2]]
@@ -172,10 +172,10 @@ x = "🎉 Hello"  # Emoji ignored
         assert len(art_errors) == 1
 
     def test_file_ignore_multiple_codes(self) -> None:
-        code = '''# slop: ignore-file[SLOP021, SLOP022]
+        code = """# slop: ignore-file[SLOP021, SLOP022]
 x = "🎉 Hello"  # Ignored
 # ╔════════╗  # Ignored
-'''
+"""
         errors = check_code(code)
         assert len(errors) == 0
 

@@ -11,6 +11,7 @@ from typing import Optional
 # ║  This ASCII art is ignored file-wide   ║
 # ╚════════════════════════════════════════╝
 
+
 def process() -> str:
     """Process something. 🚀 ✨ 🎉"""  # Emojis ignored
     return "done"
