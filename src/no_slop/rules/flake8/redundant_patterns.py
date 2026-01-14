@@ -15,16 +15,26 @@ from no_slop.rules.flake8.base import IgnoreHandler
 SLP501 = "SLP501 Unnecessary else after return/raise/break/continue"
 SLP502_TRUE = "SLP502 Redundant comparison: use 'if x' instead of 'if x == True'"
 SLP502_FALSE = "SLP502 Redundant comparison: use 'if not x' instead of 'if x == False'"
-SLP502_NONE = "SLP502 Redundant comparison: use 'if x is None' instead of 'if x == None'"
+SLP502_NONE = (
+    "SLP502 Redundant comparison: use 'if x is None' instead of 'if x == None'"
+)
 SLP502_NOT_NONE = (
     "SLP502 Redundant comparison: use 'if x is not None' instead of 'if x != None'"
 )
-SLP502_LEN_ZERO = "SLP502 Redundant comparison: use 'if not x' instead of 'if len(x) == 0'"
-SLP502_LEN_NONZERO = "SLP502 Redundant comparison: use 'if x' instead of 'if len(x) > 0'"
+SLP502_LEN_ZERO = (
+    "SLP502 Redundant comparison: use 'if not x' instead of 'if len(x) == 0'"
+)
+SLP502_LEN_NONZERO = (
+    "SLP502 Redundant comparison: use 'if x' instead of 'if len(x) > 0'"
+)
 SLP503 = "SLP503 Unnecessary pass statement in non-empty block"
-SLP504_BARE = "SLP504 Bare except clause catches all exceptions including KeyboardInterrupt"
+SLP504_BARE = (
+    "SLP504 Bare except clause catches all exceptions including KeyboardInterrupt"
+)
 SLP504_SWALLOW = "SLP504 Exception swallowed with 'except Exception: pass'"
-SLP505 = "SLP505 Mutable default argument '{arg}={default}'. Use None and initialize in body"
+SLP505 = (
+    "SLP505 Mutable default argument '{arg}={default}'. Use None and initialize in body"
+)
 SLP506 = "SLP506 f-string has no placeholders. Use regular string instead"
 SLP507_LIST = "SLP507 Redundant list() call. '{arg}' is already a list"
 SLP507_DICT = "SLP507 Redundant dict() call. Use dict literal {{}} instead"
@@ -233,9 +243,7 @@ class RedundantPatternVisitor(ast.NodeVisitor):
     # SLP506: f-string with no placeholders
     def visit_JoinedStr(self, node: ast.JoinedStr) -> None:
         # f-string with no FormattedValue nodes is just a string
-        has_placeholder = any(
-            isinstance(v, ast.FormattedValue) for v in node.values
-        )
+        has_placeholder = any(isinstance(v, ast.FormattedValue) for v in node.values)
         if not has_placeholder:
             self._add_error(node, "SLP506", SLP506)
         self.generic_visit(node)
@@ -252,10 +260,7 @@ class RedundantPatternVisitor(ast.NodeVisitor):
                 if not node.args and not node.keywords:
                     # list() - should use []
                     self._add_error(node, "SLP507", SLP507_LIST.format(arg="[]"))
-                elif (
-                    len(node.args) == 1
-                    and isinstance(node.args[0], ast.List)
-                ):
+                elif len(node.args) == 1 and isinstance(node.args[0], ast.List):
                     self._add_error(node, "SLP507", SLP507_LIST.format(arg="[...]"))
 
             # SLP507: dict({...}) or dict() without args
@@ -297,9 +302,7 @@ class RedundantPatternVisitor(ast.NodeVisitor):
                     self._add_error(iter_node, "SLP508", SLP508)
 
     # SLP509: Explicit return None at end of function
-    def _check_return_none(
-        self, node: ast.FunctionDef | ast.AsyncFunctionDef
-    ) -> None:
+    def _check_return_none(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
         """Check for explicit return None at end of function."""
         if not node.body:
             return
@@ -309,7 +312,10 @@ class RedundantPatternVisitor(ast.NodeVisitor):
             # return None or return (no value defaults to None)
             if last_stmt.value is None:
                 self._add_error(last_stmt, "SLP509", SLP509)
-            elif isinstance(last_stmt.value, ast.Constant) and last_stmt.value.value is None:
+            elif (
+                isinstance(last_stmt.value, ast.Constant)
+                and last_stmt.value.value is None
+            ):
                 self._add_error(last_stmt, "SLP509", SLP509)
 
     # SLP510: type(x) == T instead of isinstance
