@@ -44,7 +44,10 @@ def check_module_docstring(
 
     if code_lines > 0:
         ratio = doc_line_count / max(code_lines, 1)
-        if ratio > MAX_DOCSTRING_CODE_RATIO or doc_line_count > MAX_DOCSTRING_LINES_ABSOLUTE:
+        if (
+            ratio > MAX_DOCSTRING_CODE_RATIO
+            or doc_line_count > MAX_DOCSTRING_LINES_ABSOLUTE
+        ):
             if not ignores.should_ignore(first_node.lineno, "SLP020"):
                 yield (
                     first_node.lineno,

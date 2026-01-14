@@ -73,30 +73,45 @@ def process(x: int, y: int = 10) -> int:
     return x + y
 """
 
-CODE_PROCESS_TWO_CALLS_EXPLICIT = CODE_PROCESS + """
+CODE_PROCESS_TWO_CALLS_EXPLICIT = (
+    CODE_PROCESS
+    + """
 a = process(1, 2)
 b = process(3, 4)
 """
+)
 
-CODE_PROCESS_THREE_CALLS_EXPLICIT = CODE_PROCESS + """
+CODE_PROCESS_THREE_CALLS_EXPLICIT = (
+    CODE_PROCESS
+    + """
 a = process(1, 2)
 b = process(3, 4)
 c = process(5, 6)
 """
+)
 
-CODE_PROCESS_MIXED_CALLS = CODE_PROCESS + """
+CODE_PROCESS_MIXED_CALLS = (
+    CODE_PROCESS
+    + """
 a = process(1)       # Uses default
 b = process(3, 4)    # Explicit
 c = process(5)       # Uses default
 """
+)
 
-CODE_PROCESS_ONE_EXPLICIT = CODE_PROCESS + """
+CODE_PROCESS_ONE_EXPLICIT = (
+    CODE_PROCESS
+    + """
 a = process(1, 2)
 """
+)
 
-CODE_PROCESS_ONE_DEFAULT = CODE_PROCESS + """
+CODE_PROCESS_ONE_DEFAULT = (
+    CODE_PROCESS
+    + """
 a = process(1)
 """
+)
 
 
 # =============================================================================
@@ -107,16 +122,22 @@ a = process(1)
 class TestMainFunction:
     """Tests for main() function directly."""
 
-    def test_returns_1_with_issues(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_returns_1_with_issues(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         root = project({"test.py": CODE_PROCESS_ONE_EXPLICIT})
         assert run_main(cwd=root) == 1
 
-    def test_returns_0_no_issues(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_returns_0_no_issues(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         root = project({"test.py": CODE_PROCESS_ONE_DEFAULT})
         assert run_main(cwd=root) == 0
 
     def test_json_output(
-            self, project: Callable[[dict[str, str]], Path], capsys: pytest.CaptureFixture[str]
+        self,
+        project: Callable[[dict[str, str]], Path],
+        capsys: pytest.CaptureFixture[str],
     ) -> None:
         root = project({"test.py": CODE_PROCESS_ONE_EXPLICIT})
         run_main("--json", cwd=root)
@@ -159,7 +180,9 @@ class TestCLI:
         assert output[0]["function"] == "process"
         assert output[0]["param"] == "y"
 
-    def test_no_issues_exit_code(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_no_issues_exit_code(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         root = project({"test.py": CODE_PROCESS_ONE_DEFAULT})
         result = run_cli(cwd=root)
 
@@ -188,7 +211,9 @@ class TestCLI:
 class TestDetection:
     """Tests for the core unused-default detection logic."""
 
-    def test_default_never_used(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_default_never_used(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         root = project({"main.py": CODE_PROCESS_THREE_CALLS_EXPLICIT})
         issues = check(root)
 
@@ -198,7 +223,9 @@ class TestDetection:
         assert issues[0]["default"] == "10"
         assert issues[0]["call_sites"] == 3
 
-    def test_default_sometimes_used(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_default_sometimes_used(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         root = project({"main.py": CODE_PROCESS_MIXED_CALLS})
         issues = check(root)
         assert len(issues) == 0  # Default IS used, so no issue
@@ -219,7 +246,9 @@ b = format_msg("world", prefix="[ERROR]")
         assert len(issues) == 1
         assert issues[0]["param"] == "prefix"
 
-    def test_kwonly_param_never_used(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_kwonly_param_never_used(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         root = project(
             {
                 "main.py": """
@@ -236,7 +265,7 @@ b = fetch("http://b.com", timeout=20)
         assert issues[0]["param"] == "timeout"
 
     def test_kwonly_param_sometimes_used(
-            self, project: Callable[[dict[str, str]], Path]
+        self, project: Callable[[dict[str, str]], Path]
     ) -> None:
         root = project(
             {
@@ -253,13 +282,13 @@ b = fetch("http://b.com", timeout=20)
         assert len(issues) == 0
 
     def test_star_args_prevents_detection(
-            self, project: Callable[[dict[str, str]], Path]
+        self, project: Callable[[dict[str, str]], Path]
     ) -> None:
         """Can't statically determine if default is used with *args."""
         root = project(
             {
                 "main.py": CODE_PROCESS
-                           + """
+                + """
 args = (1, 2)
 a = process(*args)
 """
@@ -269,13 +298,13 @@ a = process(*args)
         assert len(issues) == 0  # Conservative: don't flag if uncertain
 
     def test_double_star_kwargs_prevents_detection(
-            self, project: Callable[[dict[str, str]], Path]
+        self, project: Callable[[dict[str, str]], Path]
     ) -> None:
         """Can't statically determine if default is used with **kwargs."""
         root = project(
             {
                 "main.py": CODE_PROCESS
-                           + """
+                + """
 kwargs = {"x": 1, "y": 2}
 a = process(**kwargs)
 """
@@ -341,13 +370,15 @@ b = get_config("/c", "/d")
         assert len(issues) == 1
         assert issues[0]["default"] == "None"
 
-    def test_no_call_sites_no_issue(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_no_call_sites_no_issue(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         root = project({"lib.py": CODE_PROCESS})  # No calls
         issues = check(root)
         assert len(issues) == 0
 
     def test_private_functions_skipped(
-            self, project: Callable[[dict[str, str]], Path]
+        self, project: Callable[[dict[str, str]], Path]
     ) -> None:
         root = project(
             {
@@ -364,7 +395,7 @@ b = _private(3, 4)
         assert len(issues) == 0  # Private functions are skipped
 
     def test_class_constructor_mixed_calls(
-            self, project: Callable[[dict[str, str]], Path]
+        self, project: Callable[[dict[str, str]], Path]
     ) -> None:
         root = project(
             {
@@ -399,7 +430,9 @@ asyncio.run(fetch("http://test.com", timeout=10))
         assert issues[0]["function"] == "fetch"
         assert issues[0]["param"] == "timeout"
 
-    def test_kwonly_without_default(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_kwonly_without_default(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         root = project(
             {
                 "main.py": """
@@ -414,7 +447,9 @@ a = process(1, required="a", optional=5)
         assert len(issues) == 1
         assert issues[0]["param"] == "optional"
 
-    def test_call_expression_callee(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_call_expression_callee(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         """Can't resolve callee when it's a call expression result."""
         root = project(
             {
@@ -440,7 +475,9 @@ factory()(5)
 class TestDefaultRepresentations:
     """Tests for how different default value types are represented."""
 
-    def test_various_default_types(self, project: Callable[[dict[str, str]], Path]) -> None:
+    def test_various_default_types(
+        self, project: Callable[[dict[str, str]], Path]
+    ) -> None:
         root = project(
             {
                 "main.py": """
@@ -473,7 +510,7 @@ func([], {}, {3}, (), dict(), lambda: 3, -3)
         assert defaults["g"] == "-1"
 
     def test_default_is_variable_name(
-            self, project: Callable[[dict[str, str]], Path]
+        self, project: Callable[[dict[str, str]], Path]
     ) -> None:
         root = project(
             {
@@ -493,7 +530,7 @@ func(20)
         assert issues[0]["default"] == "DEFAULT_VALUE"
 
     def test_default_is_method_call(
-            self, project: Callable[[dict[str, str]], Path]
+        self, project: Callable[[dict[str, str]], Path]
     ) -> None:
         root = project(
             {
@@ -515,7 +552,7 @@ func(10)
         assert issues[0]["default"] == "<call>"
 
     def test_default_is_complex_expression(
-            self, project: Callable[[dict[str, str]], Path]
+        self, project: Callable[[dict[str, str]], Path]
     ) -> None:
         root = project(
             {
