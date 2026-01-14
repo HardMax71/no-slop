@@ -219,20 +219,6 @@ def get_email(user: User) -> str:
         output = run_mypy_on_code(code)
         assert "slop-getattr" in output
 
-    def test_getattr_without_default_ok(self) -> None:
-        code = """
-from dataclasses import dataclass
-
-@dataclass
-class User:
-    email: str
-
-def get_email(user: User) -> str:
-    return getattr(user, "email")
-"""
-        output = run_mypy_on_code(code)
-        assert "slop-getattr" not in output
-
     def test_getattr_on_any_flagged(self) -> None:
         code = """
 def get_val(data) -> str:
@@ -417,3 +403,155 @@ def invoke(func: Callable[[], int]) -> int:
 """
         output = run_mypy_on_code(code)
         assert "slop-callable" not in output
+
+
+class TestSetattrChecks:
+    def test_redundant_setattr(self) -> None:
+        code = """
+class User:
+    name: str = ""
+
+def set_name(user: User) -> None:
+    setattr(user, "name", "John")
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-setattr" in output
+
+    def test_setattr_dynamic_attr_ok(self) -> None:
+        code = """
+class User:
+    name: str = ""
+
+def set_attr(user: User, attr: str, value: str) -> None:
+    setattr(user, attr, value)
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-setattr" not in output
+
+    def test_setattr_on_any_flagged(self) -> None:
+        code = """
+def set_val(obj, value: str) -> None:
+    setattr(obj, "key", value)
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-any-check" in output
+
+    def test_setattr_custom_setattr_ok(self) -> None:
+        code = """
+class Dynamic:
+    def __setattr__(self, name: str, value: object) -> None:
+        print(f"Setting {name}")
+        super().__setattr__(name, value)
+
+def set_val(d: Dynamic) -> None:
+    setattr(d, "anything", "value")
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-setattr" not in output
+
+
+class TestDelattrChecks:
+    def test_redundant_delattr(self) -> None:
+        code = """
+class User:
+    name: str = ""
+
+def del_name(user: User) -> None:
+    delattr(user, "name")
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-delattr" in output
+
+    def test_delattr_dynamic_attr_ok(self) -> None:
+        code = """
+class User:
+    name: str = ""
+
+def del_attr(user: User, attr: str) -> None:
+    delattr(user, attr)
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-delattr" not in output
+
+    def test_delattr_on_any_flagged(self) -> None:
+        code = """
+def del_val(obj) -> None:
+    delattr(obj, "key")
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-any-check" in output
+
+
+class TestGetattrNoDefault:
+    def test_redundant_getattr_no_default(self) -> None:
+        code = """
+class User:
+    name: str = ""
+
+def get_name(user: User) -> str:
+    return getattr(user, "name")
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-getattr" in output
+
+    def test_getattr_no_default_dynamic_ok(self) -> None:
+        code = """
+class User:
+    name: str = ""
+
+def get_attr(user: User, attr: str) -> object:
+    return getattr(user, attr)
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-getattr" not in output
+
+
+class TestTypedDictGet:
+    def test_typeddict_get_required_key_with_default(self) -> None:
+        code = """
+from typing import TypedDict
+
+class Config(TypedDict):
+    host: str
+    port: int
+
+def get_host(c: Config) -> str:
+    return c.get("host", "default")
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-dict-get" in output
+
+    def test_typeddict_get_optional_key_ok(self) -> None:
+        code = """
+from typing import TypedDict
+
+class Config(TypedDict, total=False):
+    host: str
+    port: int
+
+def get_port(c: Config) -> int:
+    return c.get("port", 8080)
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-dict-get" not in output
+
+    def test_typeddict_get_no_default_ok(self) -> None:
+        code = """
+from typing import TypedDict
+
+class Config(TypedDict):
+    host: str
+
+def get_host(c: Config) -> str | None:
+    return c.get("host")
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-dict-get" not in output
+
+    def test_regular_dict_get_ok(self) -> None:
+        code = """
+def get_val(d: dict[str, int]) -> int:
+    return d.get("key", 0)
+"""
+        output = run_mypy_on_code(code)
+        assert "slop-dict-get" not in output

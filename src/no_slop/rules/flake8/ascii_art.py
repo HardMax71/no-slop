@@ -7,13 +7,13 @@ from no_slop.rules.flake8.base import IgnoreHandler
 
 # Detection patterns for ASCII art
 ASCII_ART_PATTERNS = [
-    re.compile(r"[│┃┆┇┊┋|]{3,}"),
-    re.compile(r"[─━┄┅┈┉]{5,}"),
-    re.compile(r"[╔╗╚╝╠╣╦╩╬═║]+"),
-    re.compile(r"[┌┐└┘├┤┬┴┼─│]+"),
-    re.compile(r"[▀▁▂▃▄▅▆▇█▉▊▋▌▍▎▏]+"),
-    re.compile(r"[░▒▓]+"),
-    re.compile(r"[★☆✦✧◆◇○●]+"),
+    re.compile(r"[│┃┆┇┊┋|]{3,}"),  # noqa: SLP021
+    re.compile(r"[─━┄┅┈┉]{5,}"),  # noqa: SLP021
+    re.compile(r"[╔╗╚╝╠╣╦╩╬═║]+"),  # noqa: SLP021
+    re.compile(r"[┌┐└┘├┤┬┴┼─│]+"),  # noqa: SLP021
+    re.compile(r"[▀▁▂▃▄▅▆▇█▉▊▋▌▍▎▏]+"),  # noqa: SLP021
+    re.compile(r"[░▒▓]+"),  # noqa: SLP021
+    re.compile(r"[★☆✦✧◆◇○●]+"),  # noqa: SLP021, SLP022
     re.compile(r"(<{5,}|>{5,})"),
     re.compile(r"(\^{5,}|v{5,})"),
 ]
@@ -24,8 +24,8 @@ SECTION_HEADER_START = re.compile(r"^[A-Z][A-Z0-9 _:]+[-=*~#]{3,}$")
 SECTION_HEADER_WRAPPED = re.compile(r"^[-=*~#]{3,}\s+[A-Z][A-Za-z0-9 _:]+\s*[-=*~#]*$")
 
 # Classification patterns for error messages
-BOX_DRAWING_CHARS = re.compile(r"[╔╗╚╝╠╣╦╩╬║│┃┌┐└┘├┤┬┴┼]")
-BLOCK_DRAWING_CHARS = re.compile(r"[▀▁▂▃▄▅▆▇█▉▊▋▌▍▎▏░▒▓]{3,}")
+BOX_DRAWING_CHARS = re.compile(r"[╔╗╚╝╠╣╦╩╬║│┃┌┐└┘├┤┬┴┼]")  # noqa: SLP021
+BLOCK_DRAWING_CHARS = re.compile(r"[▀▁▂▃▄▅▆▇█▉▊▋▌▍▎▏░▒▓]{3,}")  # noqa: SLP021
 ARROW_PATTERN = re.compile(r"[<>]{10,}|[\^v]{10,}")
 
 

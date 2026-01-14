@@ -232,7 +232,7 @@ class CallSiteExtractor(ast.NodeVisitor):
             if isinstance(current, ast.Name):
                 parts.append(current.id)
                 return ".".join(reversed(parts))
-        return None
+        return None  # noqa: SLP509
 
 
 class UnusedDefaultsChecker:

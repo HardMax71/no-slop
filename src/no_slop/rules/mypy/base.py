@@ -25,11 +25,16 @@ SLOP_REDUNDANT_ISINSTANCE = ErrorCode(
 )
 SLOP_REDUNDANT_HASATTR = ErrorCode("slop-hasattr", "Redundant hasattr check", "General")
 SLOP_REDUNDANT_GETATTR = ErrorCode("slop-getattr", "Redundant getattr call", "General")
+SLOP_REDUNDANT_SETATTR = ErrorCode("slop-setattr", "Redundant setattr call", "General")
+SLOP_REDUNDANT_DELATTR = ErrorCode("slop-delattr", "Redundant delattr call", "General")
 SLOP_REDUNDANT_CALLABLE = ErrorCode(
     "slop-callable", "Redundant callable check", "General"
 )
 SLOP_REDUNDANT_ISSUBCLASS = ErrorCode(
     "slop-issubclass", "Redundant issubclass check", "General"
+)
+SLOP_REDUNDANT_DICT_GET = ErrorCode(
+    "slop-dict-get", "Redundant dict.get on required TypedDict key", "General"
 )
 SLOP_RUNTIME_CHECK_ON_ANY = ErrorCode(
     "slop-any-check",
@@ -90,7 +95,41 @@ def type_has_attribute(typ: ProperType, attr: str) -> bool | None:
             return None
         return False
 
-    return None
+    return None  # noqa: SLP509
+
+
+def has_custom_setattr(typ: ProperType) -> bool:
+    """Check if type has a custom __setattr__ (not inherited from object)."""
+    if isinstance(typ, Instance):
+        type_info = typ.type
+        # Check if __setattr__ is defined on this class (not inherited from object)
+        setattr_node = type_info.get("__setattr__")
+        if setattr_node is not None:
+            # Check it's not from builtins.object
+            if setattr_node.node and hasattr(setattr_node.node, "info"):
+                defining_class = getattr(setattr_node.node, "info", None)
+                if defining_class and defining_class.fullname != "builtins.object":
+                    return True
+        return False
+    if isinstance(typ, UnionType):
+        return any(has_custom_setattr(get_proper_type(m)) for m in typ.items)
+    return False
+
+
+def has_custom_delattr(typ: ProperType) -> bool:
+    """Check if type has a custom __delattr__ (not inherited from object)."""
+    if isinstance(typ, Instance):
+        type_info = typ.type
+        delattr_node = type_info.get("__delattr__")
+        if delattr_node is not None:
+            if delattr_node.node and hasattr(delattr_node.node, "info"):
+                defining_class = getattr(delattr_node.node, "info", None)
+                if defining_class and defining_class.fullname != "builtins.object":
+                    return True
+        return False
+    if isinstance(typ, UnionType):
+        return any(has_custom_delattr(get_proper_type(m)) for m in typ.items)
+    return False
 
 
 def is_callable_type(typ: ProperType) -> bool | None:
@@ -116,7 +155,7 @@ def is_callable_type(typ: ProperType) -> bool | None:
             return None
         return False
 
-    return None
+    return None  # noqa: SLP509
 
 
 def type_to_str(typ: ProperType) -> str:
@@ -171,4 +210,4 @@ def extract_class_type(typ: ProperType) -> Type | None:
             if isinstance(ret, Instance):
                 return ret
 
-    return None
+    return None  # noqa: SLP509

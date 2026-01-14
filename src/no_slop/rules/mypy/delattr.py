@@ -5,15 +5,17 @@ from mypy.plugin import FunctionContext
 from mypy.types import Type, get_proper_type
 
 from no_slop.rules.mypy.base import (
-    SLOP_REDUNDANT_GETATTR,
+    SLOP_REDUNDANT_DELATTR,
     SLOP_RUNTIME_CHECK_ON_ANY,
+    has_custom_delattr,
     is_any_or_untyped,
     type_has_attribute,
     type_to_str,
 )
 
 
-def check_getattr(ctx: FunctionContext) -> Type:
+def check_delattr(ctx: FunctionContext) -> Type:
+    """Check for redundant delattr() calls on known attributes."""
     if len(ctx.args) < 2 or not ctx.args[0] or not ctx.args[1]:
         return ctx.default_return_type
 
@@ -25,28 +27,23 @@ def check_getattr(ctx: FunctionContext) -> Type:
 
     if is_any_or_untyped(obj_type):
         ctx.api.fail(
-            "getattr on Any/untyped value. "
-            "Add type annotation instead of runtime check.",
+            "delattr on Any/untyped value. "
+            "Add type annotation instead of runtime deletion.",
             ctx.context,
             code=SLOP_RUNTIME_CHECK_ON_ANY,
         )
         return ctx.default_return_type
 
+    # Skip if class has custom __delattr__
+    if has_custom_delattr(obj_type):
+        return ctx.default_return_type
+
     if type_has_attribute(obj_type, attr_expr.value) is True:
-        has_default = len(ctx.args) >= 3 and ctx.args[2]
-        if has_default:
-            ctx.api.fail(
-                f"Redundant getattr with default: '{type_to_str(obj_type)}' "
-                f"always has '{attr_expr.value}'. Use obj.{attr_expr.value} directly.",
-                ctx.context,
-                code=SLOP_REDUNDANT_GETATTR,
-            )
-        else:
-            ctx.api.fail(
-                f"Redundant getattr: '{type_to_str(obj_type)}' "
-                f"always has '{attr_expr.value}'. Use obj.{attr_expr.value} directly.",
-                ctx.context,
-                code=SLOP_REDUNDANT_GETATTR,
-            )
+        ctx.api.fail(
+            f"Redundant delattr: '{type_to_str(obj_type)}' "
+            f"has '{attr_expr.value}'. Use del obj.{attr_expr.value} directly.",
+            ctx.context,
+            code=SLOP_REDUNDANT_DELATTR,
+        )
 
     return ctx.default_return_type

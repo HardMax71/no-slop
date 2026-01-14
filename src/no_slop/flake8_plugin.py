@@ -8,9 +8,11 @@ from no_slop.rules.flake8 import (
     IgnoreHandler,
     check_ascii_art,
     check_emojis,
+    check_indirect_access,
     check_leading_comments,
     check_local_imports,
     check_module_docstring,
+    check_redundant_patterns,
 )
 
 if TYPE_CHECKING:
@@ -35,3 +37,5 @@ class SlopStyleChecker:
         yield from check_ascii_art(self.lines, self._ignores, type(self))
         yield from check_emojis(self.lines, self._ignores, type(self))
         yield from check_local_imports(self.tree, self.lines, self._ignores, type(self))
+        yield from check_indirect_access(self.tree, self._ignores, type(self))
+        yield from check_redundant_patterns(self.tree, self._ignores, type(self))

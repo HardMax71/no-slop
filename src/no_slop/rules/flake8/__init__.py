@@ -13,7 +13,9 @@ from no_slop.rules.flake8.docstrings import (
     check_module_docstring,
 )
 from no_slop.rules.flake8.emojis import check_emojis
+from no_slop.rules.flake8.indirect_access import check_indirect_access
 from no_slop.rules.flake8.local_imports import check_local_imports
+from no_slop.rules.flake8.redundant_patterns import check_redundant_patterns
 
 __all__ = [
     "MAX_DOCSTRING_CODE_RATIO",
@@ -23,7 +25,9 @@ __all__ = [
     "IgnoreHandler",
     "check_ascii_art",
     "check_emojis",
+    "check_indirect_access",
     "check_leading_comments",
     "check_local_imports",
     "check_module_docstring",
+    "check_redundant_patterns",
 ]

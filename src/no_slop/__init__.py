@@ -8,7 +8,7 @@ __all__ = ["NoSlopPlugin", "SlopStyleChecker", "UnusedDefaultsChecker", "__versi
 def __getattr__(name: str) -> type:
     """Lazy import for UnusedDefaultsChecker to avoid import cycle when running as __main__."""
     if name == "UnusedDefaultsChecker":
-        from no_slop.unused_defaults import UnusedDefaultsChecker
+        from no_slop.unused_defaults import UnusedDefaultsChecker  # noqa: SLP023
 
         return UnusedDefaultsChecker
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
