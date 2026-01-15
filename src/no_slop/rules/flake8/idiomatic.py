@@ -14,7 +14,7 @@ class IdiomaticVisitor(ast.NodeVisitor):
         self.errors: list[tuple[int, int, str]] = []
         self.ignore_handler = ignore_handler
 
-    def _add_error(self, node: ast.AST, code: str, message: str) -> None:
+    def _add_error(self, node: ast.stmt | ast.expr, code: str, message: str) -> None:
         if not self.ignore_handler.should_ignore(node.lineno, code):
             self.errors.append((node.lineno, node.col_offset, message))
 
