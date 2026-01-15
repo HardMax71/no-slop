@@ -1,4 +1,3 @@
-
 import ast
 
 from no_slop.rules.flake8.base import IgnoreHandler
@@ -7,6 +6,7 @@ from no_slop.rules.flake8.idiomatic import check_idiomatic_patterns
 
 class MockChecker:
     name = "no-slop"
+
 
 class TestRedundantLoopGuarding:
     def test_redundant_guard_detected(self):
@@ -45,6 +45,7 @@ if items and active:
         ignores = IgnoreHandler(code.splitlines())
         errors = list(check_idiomatic_patterns(tree, ignores, MockChecker))
         assert len(errors) == 0
+
 
 class TestUnpythonicLoop:
     def test_range_len_detected(self):

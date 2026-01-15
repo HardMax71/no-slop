@@ -8,7 +8,9 @@ from no_slop.rules.flake8.base import IgnoreHandler
 
 # SLP030: Conversational residue patterns
 CONVERSATIONAL_PATTERNS = [
-    re.compile(r"^\s*#\s*(vbnet|javascript|python|cpp|csharp|java)\s*$", re.IGNORECASE),  # Language hints
+    re.compile(
+        r"^\s*#\s*(vbnet|javascript|python|cpp|csharp|java)\s*$", re.IGNORECASE
+    ),  # Language hints
     re.compile(r"here is the (updated |corrected )?code", re.IGNORECASE),
     re.compile(r"sure,? (here is|i can)", re.IGNORECASE),
     re.compile(r"as an ai", re.IGNORECASE),
@@ -87,7 +89,9 @@ def check_obvious_comments(
                 # If code matches one of the expected starts
                 if any(next_line.startswith(start) for start in code_starts):
                     # Check ignore on comment line (i+1) or code line (i+2)
-                    if ignores.should_ignore(i + 1, "SLP031") or ignores.should_ignore(i + 2, "SLP031"):
+                    if ignores.should_ignore(i + 1, "SLP031") or ignores.should_ignore(
+                        i + 2, "SLP031"
+                    ):
                         break
 
                     yield (

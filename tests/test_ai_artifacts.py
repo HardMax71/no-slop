@@ -1,4 +1,3 @@
-
 import ast
 
 from no_slop.rules.flake8.ai_artifacts import (
@@ -11,6 +10,7 @@ from no_slop.rules.flake8.base import IgnoreHandler
 
 class MockChecker:
     name = "no-slop"
+
 
 class TestConversationalResidue:
     def test_conversational_patterns_detected(self):
@@ -128,9 +128,9 @@ async def fetch(url, val):
         errors = list(check_generic_names(tree, ignores, MockChecker))
 
         assert len(errors) == 3
-        assert "SLP032" in errors[0][2] # data
-        assert "SLP032" in errors[1][2] # res
-        assert "SLP032" in errors[2][2] # val
+        assert "SLP032" in errors[0][2]  # data
+        assert "SLP032" in errors[1][2]  # res
+        assert "SLP032" in errors[2][2]  # val
 
     def test_specific_names_ok(self):
         code = """

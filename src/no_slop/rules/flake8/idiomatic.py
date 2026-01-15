@@ -30,9 +30,7 @@ class IdiomaticVisitor(ast.NodeVisitor):
             if if_test_name and for_iter_name and if_test_name == for_iter_name:
                 # Ensure no else block
                 if not node.orelse:
-                    self._add_error(
-                        node, "SLP601", SLP601.format(name=if_test_name)
-                    )
+                    self._add_error(node, "SLP601", SLP601.format(name=if_test_name))
 
         self.generic_visit(node)
 
@@ -47,9 +45,11 @@ class IdiomaticVisitor(ast.NodeVisitor):
     def _check_range_len(self, node: ast.For) -> None:
         # Check for SLP602: for i in range(len(x)):
         # iter must be range(len(x))
-        if not (isinstance(node.iter, ast.Call) and
-                isinstance(node.iter.func, ast.Name) and
-                node.iter.func.id == "range"):
+        if not (
+            isinstance(node.iter, ast.Call)
+            and isinstance(node.iter.func, ast.Name)
+            and node.iter.func.id == "range"
+        ):
             return
 
         # Check range args
@@ -57,9 +57,11 @@ class IdiomaticVisitor(ast.NodeVisitor):
             return
 
         arg = node.iter.args[0]
-        if not (isinstance(arg, ast.Call) and
-                isinstance(arg.func, ast.Name) and
-                arg.func.id == "len"):
+        if not (
+            isinstance(arg, ast.Call)
+            and isinstance(arg.func, ast.Name)
+            and arg.func.id == "len"
+        ):
             return
 
         if len(arg.args) != 1:
@@ -82,9 +84,7 @@ class IdiomaticVisitor(ast.NodeVisitor):
             usage_visitor.visit(stmt)
 
         if usage_visitor.found_indexing:
-            self._add_error(
-                node, "SLP602", SLP602.format(name=collection_name)
-            )
+            self._add_error(node, "SLP602", SLP602.format(name=collection_name))
 
     def _get_name(self, node: ast.AST) -> str | None:
         if isinstance(node, ast.Name):
@@ -103,9 +103,7 @@ class IndexingVisitor(ast.NodeVisitor):
             return
 
         # Check for collection[index]
-        if (isinstance(node.value, ast.Name) and
-            node.value.id == self.collection_name):
-
+        if isinstance(node.value, ast.Name) and node.value.id == self.collection_name:
             # Handle slice (Python < 3.9 uses ast.Index, 3.9+ uses explicit node)
             slice_node = node.slice
             # Simple check for direct name usage
