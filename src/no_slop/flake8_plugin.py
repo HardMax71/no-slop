@@ -7,11 +7,15 @@ from no_slop._version import __version__
 from no_slop.rules.flake8 import (
     IgnoreHandler,
     check_ascii_art,
+    check_conversational_residue,
     check_emojis,
+    check_generic_names,
+    check_idiomatic_patterns,
     check_indirect_access,
     check_leading_comments,
     check_local_imports,
     check_module_docstring,
+    check_obvious_comments,
     check_redundant_patterns,
 )
 
@@ -39,3 +43,7 @@ class SlopStyleChecker:
         yield from check_local_imports(self.tree, self.lines, self._ignores, type(self))
         yield from check_indirect_access(self.tree, self._ignores, type(self))
         yield from check_redundant_patterns(self.tree, self._ignores, type(self))
+        yield from check_conversational_residue(self.lines, self._ignores, type(self))
+        yield from check_obvious_comments(self.lines, self._ignores, type(self))
+        yield from check_generic_names(self.tree, self._ignores, type(self))
+        yield from check_idiomatic_patterns(self.tree, self._ignores, type(self))

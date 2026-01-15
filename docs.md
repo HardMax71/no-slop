@@ -38,6 +38,9 @@ pip install no-slop
 | `SLP021` | ASCII art (box drawing, block characters)        |
 | `SLP022` | Emojis in code                                   |
 | `SLP023` | Local imports (imports inside functions)         |
+| `SLP030` | Conversational residue (e.g., "Here is the code")|
+| `SLP031` | Obvious comments (e.g., "# Import modules")      |
+| `SLP032` | Generic variable names in function signature     |
 | `SLP401` | `obj.__dict__.get()` instead of direct access    |
 | `SLP402` | `obj.__dict__[key]` instead of `obj.attr`        |
 | `SLP403` | `obj.__dict__[key] = val` instead of `obj.attr=` |
@@ -56,6 +59,8 @@ pip install no-slop
 | `SLP508` | Unnecessary .keys() in iteration                 |
 | `SLP509` | Explicit `return None` at end of function        |
 | `SLP510` | `type(x) == T` instead of `isinstance(x, T)`     |
+| `SLP601` | Redundant loop guarding (`if x: for y in x:`)    |
+| `SLP602` | Unpythonic loop (`for i in range(len(x))` with indexing) |
 
 ### Unused Defaults CLI
 
@@ -188,6 +193,42 @@ Imports inside functions:
 - Make code harder to analyze
 
 Exception: `if TYPE_CHECKING:` blocks are allowed.
+
+### Conversational Residue (SLP030)
+
+```python
+# Here is the updated code
+def process():
+    # As an AI model I suggest
+    pass
+```
+
+Remove these chat artifacts.
+
+### Obvious Comments (SLP031)
+
+```python
+# Import modules
+import os
+
+# Define function
+def calculate():
+    pass
+```
+
+Comments should explain *why*, not *what*.
+
+### Generic Variable Names (SLP032)
+
+```python
+def process_data(data, val):  # Bad
+    pass
+
+def process_user(user_profile, score):  # Good
+    pass
+```
+
+Avoid `data`, `res`, `val`, `item`, `obj`, `content`, `info`, `result` in function signatures.
 
 ### Indirect access patterns (SLP401-SLP407)
 
@@ -431,6 +472,35 @@ if type(x) == int:
 # Good - handles subclasses correctly
 if isinstance(x, int):
     process(x)
+```
+
+### Redundant loop guarding (SLP601)
+
+```python
+# Bad - if check is redundant because loop won't run if empty
+if items:
+    for item in items:
+        process(item)
+
+# Good
+for item in items:
+    process(item)
+```
+
+### Unpythonic loop (SLP602)
+
+```python
+# Bad - C-style iteration
+for i in range(len(items)):
+    print(items[i])
+
+# Good - direct iteration
+for item in items:
+    print(item)
+
+# Good - if index is needed
+for i, item in enumerate(items):
+    print(i, item)
 ```
 
 ## Ignoring Errors

@@ -137,6 +137,7 @@ class RedundantPatternVisitor(ast.NodeVisitor):
                         elif isinstance(op, ast.Gt):
                             self._add_error(node, "SLP502", SLP502_LEN_NONZERO)
 
+        self._check_type_comparison(node)
         self.generic_visit(node)
 
     # SLP503: Unnecessary pass in non-empty block
@@ -350,55 +351,6 @@ class RedundantPatternVisitor(ast.NodeVisitor):
             msg = SLP510.format(type_name=type_name)
             self._add_error(node, "SLP510", msg)
 
-    def visit_Compare_type_check(self, node: ast.Compare) -> None:
-        """Additional check for type() comparisons."""
-        self._check_type_comparison(node)
-
-
-class TypeComparisonVisitor(ast.NodeVisitor):
-    """Separate visitor for type comparison checks to avoid method override issues."""
-
-    def __init__(self, ignore_handler: IgnoreHandler) -> None:
-        self.errors: list[tuple[int, int, str]] = []
-        self.ignore_handler = ignore_handler
-
-    def _add_error(self, node: ast.expr | ast.stmt, code: str, message: str) -> None:
-        if not self.ignore_handler.should_ignore(node.lineno, code):
-            self.errors.append((node.lineno, node.col_offset, message))
-
-    def visit_Compare(self, node: ast.Compare) -> None:
-        if len(node.ops) != 1 or len(node.comparators) != 1:
-            self.generic_visit(node)
-            return
-
-        op = node.ops[0]
-        if not isinstance(op, (ast.Eq, ast.Is)):
-            self.generic_visit(node)
-            return
-
-        left = node.left
-        right = node.comparators[0]
-
-        def is_type_call(n: ast.expr) -> bool:
-            return (
-                isinstance(n, ast.Call)
-                and isinstance(n.func, ast.Name)
-                and n.func.id == "type"
-                and len(n.args) == 1
-            )
-
-        type_name = None
-        if is_type_call(left):
-            type_name = _get_type_name(right)
-        elif is_type_call(right):
-            type_name = _get_type_name(left)
-
-        if type_name:
-            msg = SLP510.format(type_name=type_name)
-            self._add_error(node, "SLP510", msg)
-
-        self.generic_visit(node)
-
 
 def check_redundant_patterns(
     tree: ast.AST,
@@ -413,10 +365,4 @@ def check_redundant_patterns(
     visitor = RedundantPatternVisitor(ignore_handler)
     visitor.visit(tree)
     for line, col, message in visitor.errors:
-        yield (line, col, message, checker_type)
-
-    # Run type comparison visitor separately
-    type_visitor = TypeComparisonVisitor(ignore_handler)
-    type_visitor.visit(tree)
-    for line, col, message in type_visitor.errors:
         yield (line, col, message, checker_type)
