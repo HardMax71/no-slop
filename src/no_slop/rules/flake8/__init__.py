@@ -5,6 +5,7 @@ from no_slop.rules.flake8.ai_artifacts import (
     check_generic_names,
     check_obvious_comments,
 )
+from no_slop.rules.flake8.ai_patterns import check_ai_patterns
 from no_slop.rules.flake8.ascii_art import check_ascii_art
 from no_slop.rules.flake8.base import (
     MAX_DOCSTRING_CODE_RATIO,
@@ -33,6 +34,7 @@ __all__ = [
     "check_conversational_residue",
     "check_emojis",
     "check_generic_names",
+    "check_ai_patterns",
     "check_idiomatic_patterns",
     "check_indirect_access",
     "check_leading_comments",

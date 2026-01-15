@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from no_slop._version import __version__
 from no_slop.rules.flake8 import (
     IgnoreHandler,
+    check_ai_patterns,
     check_ascii_art,
     check_conversational_residue,
     check_emojis,
@@ -47,3 +48,6 @@ class SlopStyleChecker:
         yield from check_obvious_comments(self.lines, self._ignores, type(self))
         yield from check_generic_names(self.tree, self._ignores, type(self))
         yield from check_idiomatic_patterns(self.tree, self._ignores, type(self))
+        yield from check_ai_patterns(
+            self.tree, self.lines, self._ignores, type(self), self.filename
+        )

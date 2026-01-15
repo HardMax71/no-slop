@@ -292,6 +292,8 @@ name = "no-slop"
 source = { editable = "." }
 dependencies = [
     { name = "mypy" },
+    { name = "packaging" },
+    { name = "tomli" },
 ]
 
 [package.optional-dependencies]
@@ -306,9 +308,11 @@ dev = [
 requires-dist = [
     { name = "flake8", marker = "extra == 'dev'", specifier = ">=6.0" },
     { name = "mypy", specifier = ">=1.0" },
+    { name = "packaging", specifier = ">=23.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0" },
     { name = "pytest-cov", marker = "extra == 'dev'", specifier = ">=4.0" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1" },
+    { name = "tomli", specifier = ">=2.0" },
 ]
 provides-extras = ["dev"]
 

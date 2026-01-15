@@ -41,6 +41,14 @@ pip install no-slop
 | `SLP030` | Conversational residue (e.g., "Here is the code")|
 | `SLP031` | Obvious comments (e.g., "# Import modules")      |
 | `SLP032` | Generic variable names in function signature     |
+| `SLP033` | Placeholder body (pass/ellipsis/NotImplemented)  |
+| `SLP034` | Orphaned placeholder TODO/FIXME without context  |
+| `SLP035` | Debug artifacts (print/breakpoint/set_trace)     |
+| `SLP036` | Cross-language API on literal or annotated type  |
+| `SLP037` | Unresolvable import (not stdlib/local/declared)  |
+| `SLP038` | Hedging comments in code/docstrings              |
+| `SLP039` | Single-method class wrapper                      |
+| `SLP040` | Over-nested or oversized function                |
 | `SLP401` | `obj.__dict__.get()` instead of direct access    |
 | `SLP402` | `obj.__dict__[key]` instead of `obj.attr`        |
 | `SLP403` | `obj.__dict__[key] = val` instead of `obj.attr=` |

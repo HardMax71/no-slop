@@ -20,7 +20,9 @@ classifiers = [
     "Framework :: Flake8",
 ]
 dependencies = [
+    "packaging>=23.0",
     "mypy>=1.0",
+    "tomli>=2.0",
 ]
 
 [project.urls]
